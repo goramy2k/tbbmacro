@@ -1,0 +1,118 @@
+{
+  "updated": "2026-05-22",
+  "updated_kst": "2026-05-22 17:00 KST",
+  "kospi": 7847.71,
+  "score": 56,
+  "indicators": [
+    {
+      "id": "vkospi",
+      "label": "VKOSPI",
+      "cat": "변동성",
+      "value": "62",
+      "raw": 62.0,
+      "unit": "",
+      "status": "warn",
+      "source": "manual"
+    },
+    {
+      "id": "usdkrw",
+      "label": "USD/KRW",
+      "cat": "환율·수급",
+      "value": "1,517.2",
+      "raw": 1517.2,
+      "unit": "원",
+      "status": "danger",
+      "source": "manual"
+    },
+    {
+      "id": "foreigner",
+      "label": "외국인 순매수",
+      "cat": "환율·수급",
+      "value": "-1.9조",
+      "raw": -19000.0,
+      "unit": "",
+      "status": "danger",
+      "source": "manual"
+    },
+    {
+      "id": "bbb",
+      "label": "BBB- 스프레드",
+      "cat": "크레딧",
+      "value": "~295",
+      "raw": 295,
+      "unit": "bp",
+      "status": "warn",
+      "source": "manual"
+    },
+    {
+      "id": "spread",
+      "label": "국고채 10Y-2Y",
+      "cat": "금리곡선",
+      "value": "+20",
+      "raw": 20,
+      "unit": "bp",
+      "status": "warn",
+      "source": "manual"
+    },
+    {
+      "id": "cp",
+      "label": "CP 스프레드",
+      "cat": "크레딧",
+      "value": "~38",
+      "raw": 38,
+      "unit": "bp",
+      "status": "ok",
+      "source": "manual"
+    },
+    {
+      "id": "semi",
+      "label": "반도체 수출 YoY",
+      "cat": "경기선행",
+      "value": "+149.8",
+      "raw": 149.8,
+      "unit": "%",
+      "status": "ok",
+      "source": "manual"
+    },
+    {
+      "id": "cds",
+      "label": "한국 CDS 5Y",
+      "cat": "국가신용",
+      "value": "~50",
+      "raw": 50,
+      "unit": "bp",
+      "status": "warn",
+      "source": "manual"
+    }
+  ],
+  "history": [
+    {
+      "date": "5/13",
+      "score": 63
+    },
+    {
+      "date": "5/15",
+      "score": 41
+    },
+    {
+      "date": "5/18",
+      "score": 52
+    },
+    {
+      "date": "5/19",
+      "score": 38
+    },
+    {
+      "date": "5/20",
+      "score": 36
+    },
+    {
+      "date": "5/21",
+      "score": 61
+    },
+    {
+      "date": "5/22",
+      "score": 56
+    }
+  ]
+}

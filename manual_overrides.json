@@ -1,0 +1,14 @@
+{
+  "_comment": "무료 실시간 소스가 없는 지표는 여기에 직접 입력합니다. 주 1회 정도 갱신을 권장합니다.",
+  "_bbb_source": "KOFIA 채권정보센터 kofiabond.or.kr -> 시가평가 -> 등급별 스프레드",
+  "_cp_source": "KOFIA 채권정보센터 kofiabond.or.kr -> 단기금리 (CP 91일 - CD 91일)",
+  "_cds_source": "Bloomberg / Investing.com 등에서 South Korea 5Y CDS 확인",
+  "_semi_source": "관세청 수출입무역통계 unipass.customs.go.kr 또는 산업부 월간 보도자료",
+
+  "bbb_spread": 295,
+  "cp_spread": 38,
+  "cds": 50,
+  "semi_export_yoy": 149.8,
+
+  "_last_manual_update": "2026-05-22"
+}
