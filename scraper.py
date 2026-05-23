@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-한국 + 미국 매크로 모니터링 - 지표 자동 수집 스크립트
-매일 GitHub Actions 로 실행되어 data.json 을 생성한다.
+한국 + 미국 매크로 모니터링 - 지표 수집 + AI 분석 생성 스크립트
 
-한국 (8개)
-  - 자동 (네이버): VKOSPI, USD/KRW, 외국인 수급, 국고채 금리
-  - 수동 (manual_overrides.json): BBB-, CP 스프레드, CDS, 반도체 수출
+사용법:
+  python scraper.py kr     # 한국 지표만 수집·분석 (평일 17:00 KST)
+  python scraper.py us     # 미국 지표만 수집·분석 (평일 08:00 KST)
+  python scraper.py        # 한국·미국 모두 (수동 실행)
 
-미국 (8개 카드 + CPI/PPI 별도)
-  - 자동 (FRED API): 2Y, 10Y, 30Y, 장단기 스프레드, HY 스프레드, VIX, WTI, 브렌트, CPI, PPI
-
-FRED API 키는 환경변수 FRED_API_KEY 로 받는다 (GitHub Secrets).
+한쪽만 갱신할 때 다른 쪽 데이터는 기존 data.json 값을 그대로 보존한다.
+AI 분석은 Claude API(환경변수 ANTHROPIC_API_KEY)로 생성한다.
+종합 요약은 양쪽 분석이 모두 있을 때 갱신된다.
 """
 
 import json
@@ -33,13 +32,21 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(ROOT, "data.json")
 MANUAL_PATH = os.path.join(ROOT, "manual_overrides.json")
 
-# GitHub Secrets 에서 주입 (절대 코드에 키를 직접 쓰지 않는다)
 FRED_KEY = os.environ.get("FRED_API_KEY", "").strip()
+ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+
+# 실행 모드: kr / us / all
+MODE = sys.argv[1].lower() if len(sys.argv) > 1 else "all"
+if MODE not in ("kr", "us", "all"):
+    MODE = "all"
 
 
-def fetch(url, timeout=20):
+def fetch(url, timeout=20, data=None, headers=None):
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        h = {"User-Agent": UA}
+        if headers:
+            h.update(headers)
+        req = urllib.request.Request(url, data=data, headers=h)
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.read().decode("utf-8", errors="ignore")
     except Exception as e:
@@ -53,18 +60,15 @@ def fetch_json(url, timeout=20):
         return None
     try:
         return json.loads(raw)
-    except Exception as e:
-        print(f"[json 파싱 실패] -> {e}", file=sys.stderr)
+    except Exception:
         return None
 
 
 # ===========================================================================
-# FRED - 미국 지표 공통 수집기
+# FRED
 # ===========================================================================
 def fred_latest(series_id):
-    """FRED 시리즈의 최근 유효 관측치 1개를 반환."""
     if not FRED_KEY:
-        print("[FRED] API 키 없음 - 미국 자동수집 건너뜀", file=sys.stderr)
         return None, None
     url = (f"https://api.stlouisfed.org/fred/series/observations"
            f"?series_id={series_id}&api_key={FRED_KEY}&file_type=json"
@@ -82,7 +86,6 @@ def fred_latest(series_id):
 
 
 def fred_yoy(series_id):
-    """월간 지수의 전년동월비(%)를 계산. CPI, PPI 용."""
     if not FRED_KEY:
         return None, None
     url = (f"https://api.stlouisfed.org/fred/series/observations"
@@ -107,7 +110,7 @@ def fred_yoy(series_id):
 
 
 # ===========================================================================
-# 한국 지표 수집기
+# 한국 지표
 # ===========================================================================
 def get_usdkrw():
     j = fetch_json("https://api.stock.naver.com/marketindex/exchange/FX_USDKRW")
@@ -164,7 +167,6 @@ def get_treasury_kr():
 
 
 def get_us_market_naver():
-    """네이버 해외 시장지표에서 VIX, WTI, 브렌트 보조 수집."""
     out = {"vix": None, "wti": None, "brent": None}
     mapping = {
         "vix": "https://api.stock.naver.com/index/.VIX/basic",
@@ -181,7 +183,7 @@ def get_us_market_naver():
 
 
 # ===========================================================================
-# 상태 판정
+# 상태 판정 / 점수
 # ===========================================================================
 def status_of(metric, v):
     if v is None:
@@ -223,33 +225,72 @@ def score_of(indicators):
     return round(s)
 
 
-def main():
-    manual = {}
-    if os.path.exists(MANUAL_PATH):
-        try:
-            with open(MANUAL_PATH, encoding="utf-8") as f:
-                manual = json.load(f)
-        except Exception as e:
-            print(f"[manual 로드 실패] {e}", file=sys.stderr)
+# ===========================================================================
+# Claude AI 분석 생성
+# ===========================================================================
+def claude_analyze(prompt, system):
+    """Claude API 호출. 실패 시 None."""
+    if not ANTHROPIC_KEY:
+        print("[Claude] API 키 없음 - 분석 건너뜀", file=sys.stderr)
+        return None
+    body = json.dumps({
+        "model": "claude-sonnet-4-20250514",
+        "max_tokens": 1000,
+        "system": system,
+        "messages": [{"role": "user", "content": prompt}],
+    }).encode("utf-8")
+    raw = fetch("https://api.anthropic.com/v1/messages", timeout=60,
+                data=body, headers={
+                    "Content-Type": "application/json",
+                    "x-api-key": ANTHROPIC_KEY,
+                    "anthropic-version": "2023-06-01",
+                })
+    if not raw:
+        return None
+    try:
+        d = json.loads(raw)
+        return "".join(b.get("text", "") for b in d.get("content", [])).strip()
+    except Exception as e:
+        print(f"[Claude 파싱 실패] {e}", file=sys.stderr)
+        return None
 
-    prev = {}
-    if os.path.exists(DATA_PATH):
-        try:
-            with open(DATA_PATH, encoding="utf-8") as f:
-                prev = json.load(f)
-        except Exception:
-            pass
 
+SYS_ANALYST = ("당신은 한국·미국 증시 전문 애널리스트입니다. "
+               "주어진 지표를 바탕으로 4~5문장으로 핵심만 간결하게 한국어로 "
+               "분석하세요. 현재 상황의 의미, 주목할 리스크, 단기 시사점 "
+               "순으로 서술하세요. 마크다운 없이 평문으로만 작성하세요.")
+
+
+def analyze_market(name, indicators, score):
+    snap = ", ".join(f"{i['label']}: {i['value']}{i['unit']}({i['status']})"
+                     for i in indicators)
+    prompt = (f"오늘({ISO}) {name} 시장 지표 현황입니다. "
+              f"건전성 점수 {score}/100 (낮을수록 위험). 지표: {snap}. "
+              f"이 {name} 시장의 현재 건전성을 종합 진단해주세요.")
+    return claude_analyze(prompt, SYS_ANALYST)
+
+
+def analyze_summary(kr_text, us_text, kr_score, us_score):
+    prompt = (f"오늘({ISO}) 한국 시장 분석: {kr_text}\n\n"
+              f"미국 시장 분석: {us_text}\n\n"
+              f"한국 건전성 {kr_score}/100, 미국 {us_score}/100. "
+              f"두 시장을 아우르는 글로벌 종합 요약을 4~5문장으로 작성하세요. "
+              f"두 시장의 상호 연관성과 한국 투자자가 가장 주목해야 할 "
+              f"핵심 포인트를 강조하세요.")
+    return claude_analyze(prompt, SYS_ANALYST)
+
+
+# ===========================================================================
+# 메인
+# ===========================================================================
+def build_kr(manual, prev):
     prev_kr = {i["id"]: i for i in prev.get("kr", {}).get("indicators", [])}
-    prev_us = {i["id"]: i for i in prev.get("us", {}).get("indicators", [])}
-
-    # ---------------- 한국 ----------------
     usdkrw = get_usdkrw()
     vkospi = get_vkospi()
     kospi, foreign = get_kospi_and_foreign()
     kr_spread = get_treasury_kr()
 
-    def kr_auto(mid, val, fmt, unit, label, cat):
+    def auto(mid, val, fmt, unit, label, cat):
         if val is None:
             p = prev_kr.get(mid, {})
             return {"id": mid, "label": label, "cat": cat,
@@ -260,48 +301,51 @@ def main():
                 "value": fmt(val), "raw": val, "unit": unit,
                 "status": status_of(mid, val), "source": "naver"}
 
-    kr_inds = []
-    kr_inds.append(kr_auto("vkospi", vkospi, lambda v: f"{v:.1f}", "",
-                           "VKOSPI", "변동성"))
-    kr_inds.append(kr_auto("usdkrw", usdkrw, lambda v: f"{v:,.1f}", "원",
-                           "USD/KRW", "환율·수급"))
+    inds = []
+    inds.append(auto("vkospi", vkospi, lambda v: f"{v:.1f}", "",
+                     "VKOSPI", "변동성"))
+    inds.append(auto("usdkrw", usdkrw, lambda v: f"{v:,.1f}", "원",
+                     "USD/KRW", "환율·수급"))
     if foreign is None:
         p = prev_kr.get("foreigner", {})
-        kr_inds.append({"id": "foreigner", "label": "외국인 순매수",
-                        "cat": "환율·수급", "value": p.get("value"),
-                        "raw": p.get("raw"), "unit": "",
-                        "status": p.get("status", "warn"), "source": "fallback"})
+        inds.append({"id": "foreigner", "label": "외국인 순매수",
+                     "cat": "환율·수급", "value": p.get("value"),
+                     "raw": p.get("raw"), "unit": "",
+                     "status": p.get("status", "warn"), "source": "fallback"})
     else:
         fval = (f"{foreign/10000:+.1f}조" if abs(foreign) >= 10000
                 else f"{foreign:+,.0f}억")
-        kr_inds.append({"id": "foreigner", "label": "외국인 순매수",
-                        "cat": "환율·수급", "value": fval, "raw": foreign,
-                        "unit": "", "status": status_of("foreigner", foreign),
-                        "source": "naver"})
+        inds.append({"id": "foreigner", "label": "외국인 순매수",
+                     "cat": "환율·수급", "value": fval, "raw": foreign,
+                     "unit": "", "status": status_of("foreigner", foreign),
+                     "source": "naver"})
     bbb = manual.get("bbb_spread")
-    kr_inds.append({"id": "bbb", "label": "BBB- 스프레드", "cat": "크레딧",
-                    "value": f"~{bbb:.0f}" if bbb is not None else None,
-                    "raw": bbb, "unit": "bp",
-                    "status": status_of("bbb", bbb), "source": "manual"})
-    kr_inds.append(kr_auto("spread", kr_spread, lambda v: f"{v:+.0f}", "bp",
-                           "국고채 10Y-2Y", "금리곡선"))
+    inds.append({"id": "bbb", "label": "BBB- 스프레드", "cat": "크레딧",
+                 "value": f"~{bbb:.0f}" if bbb is not None else None,
+                 "raw": bbb, "unit": "bp",
+                 "status": status_of("bbb", bbb), "source": "manual"})
+    inds.append(auto("spread", kr_spread, lambda v: f"{v:+.0f}", "bp",
+                     "국고채 10Y-2Y", "금리곡선"))
     cp = manual.get("cp_spread")
-    kr_inds.append({"id": "cp", "label": "CP 스프레드", "cat": "크레딧",
-                    "value": f"~{cp:.0f}" if cp is not None else None,
-                    "raw": cp, "unit": "bp",
-                    "status": status_of("cp", cp), "source": "manual"})
+    inds.append({"id": "cp", "label": "CP 스프레드", "cat": "크레딧",
+                 "value": f"~{cp:.0f}" if cp is not None else None,
+                 "raw": cp, "unit": "bp",
+                 "status": status_of("cp", cp), "source": "manual"})
     semi = manual.get("semi_export_yoy")
-    kr_inds.append({"id": "semi", "label": "반도체 수출 YoY", "cat": "경기선행",
-                    "value": f"{semi:+.1f}" if semi is not None else None,
-                    "raw": semi, "unit": "%",
-                    "status": status_of("semi", semi), "source": "manual"})
+    inds.append({"id": "semi", "label": "반도체 수출 YoY", "cat": "경기선행",
+                 "value": f"{semi:+.1f}" if semi is not None else None,
+                 "raw": semi, "unit": "%",
+                 "status": status_of("semi", semi), "source": "manual"})
     cds = manual.get("cds")
-    kr_inds.append({"id": "cds", "label": "한국 CDS 5Y", "cat": "국가신용",
-                    "value": f"~{cds:.0f}" if cds is not None else None,
-                    "raw": cds, "unit": "bp",
-                    "status": status_of("cds", cds), "source": "manual"})
+    inds.append({"id": "cds", "label": "한국 CDS 5Y", "cat": "국가신용",
+                 "value": f"~{cds:.0f}" if cds is not None else None,
+                 "raw": cds, "unit": "bp",
+                 "status": status_of("cds", cds), "source": "manual"})
+    return {"score": score_of(inds), "kospi": kospi, "indicators": inds}
 
-    # ---------------- 미국 ----------------
+
+def build_us(prev):
+    prev_us = {i["id"]: i for i in prev.get("us", {}).get("indicators", [])}
     us2y, _ = fred_latest("DGS2")
     us10y, _ = fred_latest("DGS10")
     us30y, _ = fred_latest("DGS30")
@@ -318,7 +362,7 @@ def main():
     wti = wti_f if wti_f is not None else nv["wti"]
     brent = brent_f if brent_f is not None else nv["brent"]
 
-    def us_card(mid, val, fmt, unit, label, cat):
+    def card(mid, val, fmt, unit, label, cat):
         if val is None:
             p = prev_us.get(mid, {})
             return {"id": mid, "label": label, "cat": cat,
@@ -329,22 +373,20 @@ def main():
                 "value": fmt(val), "raw": val, "unit": unit,
                 "status": status_of(mid, val), "source": "fred"}
 
-    us_inds = []
-    us_inds.append(us_card("vix", vix, lambda v: f"{v:.1f}", "", "VIX", "변동성"))
-    us_inds.append(us_card("hy", hy, lambda v: f"{v:.2f}", "%",
-                           "HY 스프레드", "크레딧"))
-    us_inds.append(us_card("wti", wti, lambda v: f"{v:.1f}", "$",
-                           "WTI 유가", "원자재"))
-    us_inds.append(us_card("brent", brent, lambda v: f"{v:.1f}", "$",
-                           "브렌트유", "원자재"))
-    us_inds.append(us_card("us2y", us2y, lambda v: f"{v:.2f}", "%",
-                           "미국 2Y", "금리"))
-    us_inds.append(us_card("us10y", us10y, lambda v: f"{v:.2f}", "%",
-                           "미국 10Y", "금리"))
-    us_inds.append(us_card("us30y", us30y, lambda v: f"{v:.2f}", "%",
-                           "미국 30Y", "금리"))
-    us_inds.append(us_card("usspread", usspread, lambda v: f"{v:+.2f}", "%p",
-                           "장단기 10Y-2Y", "금리곡선"))
+    inds = []
+    inds.append(card("vix", vix, lambda v: f"{v:.1f}", "", "VIX", "변동성"))
+    inds.append(card("hy", hy, lambda v: f"{v:.2f}", "%",
+                     "HY 스프레드", "크레딧"))
+    inds.append(card("wti", wti, lambda v: f"{v:.1f}", "$", "WTI 유가", "원자재"))
+    inds.append(card("brent", brent, lambda v: f"{v:.1f}", "$",
+                     "브렌트유", "원자재"))
+    inds.append(card("us2y", us2y, lambda v: f"{v:.2f}", "%", "미국 2Y", "금리"))
+    inds.append(card("us10y", us10y, lambda v: f"{v:.2f}", "%",
+                     "미국 10Y", "금리"))
+    inds.append(card("us30y", us30y, lambda v: f"{v:.2f}", "%",
+                     "미국 30Y", "금리"))
+    inds.append(card("usspread", usspread, lambda v: f"{v:+.2f}", "%p",
+                     "장단기 10Y-2Y", "금리곡선"))
 
     pm = prev.get("us", {}).get("macro", {})
     macro = {
@@ -365,34 +407,76 @@ def main():
                 "status": status_of("ppi", ppi_yoy if ppi_yoy is not None
                                      else pm.get("ppi", {}).get("raw"))},
     }
+    return {"score": score_of(inds), "indicators": inds, "macro": macro}
 
-    kr_score = score_of(kr_inds)
-    us_score = score_of(us_inds)
-    total_score = round((kr_score + us_score) / 2)
 
-    history = prev.get("history", [])
-    history = [h for h in history if h.get("date") != DATESTR]
-    history.append({"date": DATESTR, "kr": kr_score,
-                    "us": us_score, "total": total_score})
-    history = history[-30:]
+def main():
+    manual = {}
+    if os.path.exists(MANUAL_PATH):
+        try:
+            with open(MANUAL_PATH, encoding="utf-8") as f:
+                manual = json.load(f)
+        except Exception:
+            pass
+
+    prev = {}
+    if os.path.exists(DATA_PATH):
+        try:
+            with open(DATA_PATH, encoding="utf-8") as f:
+                prev = json.load(f)
+        except Exception:
+            pass
+
+    # 이전 분석 텍스트 보존
+    ai = prev.get("ai", {})
+    kr_block = prev.get("kr", {})
+    us_block = prev.get("us", {})
+    updated_kr = prev.get("updated_kr")
+    updated_us = prev.get("updated_us")
+
+    # ---- 한국 ----
+    if MODE in ("kr", "all"):
+        kr_block = build_kr(manual, prev)
+        updated_kr = TODAY.strftime("%Y-%m-%d %H:%M KST")
+        txt = analyze_market("한국", kr_block["indicators"], kr_block["score"])
+        if txt:
+            ai["kr"] = txt
+        print(f"[한국] 점수 {kr_block['score']} | "
+              f"분석 {'생성' if txt else '실패/건너뜀'}")
+
+    # ---- 미국 ----
+    if MODE in ("us", "all"):
+        us_block = build_us(prev)
+        updated_us = TODAY.strftime("%Y-%m-%d %H:%M KST")
+        txt = analyze_market("미국", us_block["indicators"], us_block["score"])
+        if txt:
+            ai["us"] = txt
+        print(f"[미국] 점수 {us_block['score']} | "
+              f"분석 {'생성' if txt else '실패/건너뜀'}")
+
+    # ---- 종합 요약 (양쪽 분석이 모두 있을 때만) ----
+    if ai.get("kr") and ai.get("us"):
+        summary = analyze_summary(ai["kr"], ai["us"],
+                                  kr_block.get("score", 0),
+                                  us_block.get("score", 0))
+        if summary:
+            ai["summary"] = summary
+            print("[종합] 요약 생성 완료")
 
     out = {
         "updated": ISO,
         "updated_kst": TODAY.strftime("%Y-%m-%d %H:%M KST"),
-        "total_score": total_score,
-        "history": history,
-        "kr": {"score": kr_score, "kospi": kospi, "indicators": kr_inds},
-        "us": {"score": us_score, "indicators": us_inds, "macro": macro},
+        "updated_kr": updated_kr,
+        "updated_us": updated_us,
+        "kr": kr_block,
+        "us": us_block,
+        "ai": ai,
     }
 
     with open(DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    kr_ok = sum(1 for i in kr_inds if i["source"] in ("naver", "manual"))
-    us_ok = sum(1 for i in us_inds if i["source"] == "fred")
-    print(f"[완료] {ISO} | 통합 {total_score} "
-          f"(한국 {kr_score}/미국 {us_score}) | "
-          f"한국 {kr_ok}/8, 미국 {us_ok}/8 수집")
+    print(f"[완료] {ISO} | 모드={MODE}")
 
 
 if __name__ == "__main__":

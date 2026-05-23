@@ -30,14 +30,12 @@ body{background:var(--app-bg);font-family:-apple-system,BlinkMacSystemFont,"Sego
 .wrap{max-width:680px;margin:0 auto}
 .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px}
 .head h1{font-size:18px;font-weight:600}
-.head .upd{font-size:11px;color:var(--tx3);text-align:right}
-/* 시장 전환 (한국/미국/통합) */
+.head .upd{font-size:11px;color:var(--tx3);text-align:right;line-height:1.5}
 .market-switch{display:flex;gap:6px;margin:12px 0}
 .ms-btn{flex:1;padding:9px;font-size:13px;font-weight:600;border:1px solid var(--border);
   border-radius:8px;background:var(--card-bg);color:var(--tx2);cursor:pointer;
   font-family:inherit}
 .ms-btn.active{background:var(--tx1);color:var(--app-bg);border-color:var(--tx1)}
-/* 하위 탭 */
 .tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;
   overflow-x:auto}
 .tab{padding:9px 13px;font-size:13px;cursor:pointer;border:none;background:none;
@@ -45,22 +43,13 @@ body{background:var(--app-bg);font-family:-apple-system,BlinkMacSystemFont,"Sego
   font-family:inherit}
 .tab.active{color:var(--tx1);border-bottom-color:var(--tx1);font-weight:600}
 .view{display:none}.view.active{display:block}
-.section{display:none}.section.active{display:block}
 .score-banner{display:flex;align-items:center;gap:16px;padding:14px 16px;
   border-radius:12px;margin-bottom:12px}
 .score-num{font-size:46px;font-weight:600;line-height:1}
 .score-title{font-size:14px;font-weight:600;margin-bottom:3px}
 .score-sub{font-size:11px;line-height:1.5;opacity:.85}
-.dual-score{display:flex;gap:8px;margin-bottom:12px}
-.ds-card{flex:1;background:var(--surface);border-radius:10px;padding:12px;text-align:center}
-.ds-lb{font-size:11px;color:var(--tx3);margin-bottom:4px}
-.ds-num{font-size:28px;font-weight:600}
 .trend-strip{background:var(--surface);border-radius:8px;padding:10px 14px;
   margin-bottom:12px;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
-.t-item{text-align:center;flex:0 0 50px}
-.t-lb{font-size:10px;color:var(--tx3);margin-bottom:2px}
-.t-sc{font-size:15px;font-weight:600}
-.t-arr{font-size:12px;color:var(--tx3);margin-top:8px}
 .macro-banner{display:flex;gap:8px;margin-bottom:12px}
 .mb-card{flex:1;border-radius:8px;padding:10px 12px}
 .mb-lb{font-size:11px;margin-bottom:2px;font-weight:600}
@@ -68,8 +57,7 @@ body{background:var(--app-bg);font-family:-apple-system,BlinkMacSystemFont,"Sego
 .mb-date{font-size:10px;opacity:.8;margin-top:1px}
 .ind-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
 .ind-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;
-  padding:12px 14px;cursor:pointer}
-.ind-card.selected{border-color:var(--tx1)}
+  padding:12px 14px}
 .ic-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
 .ic-label{font-size:11px;color:var(--tx3);font-weight:600}
 .ic-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:2px}
@@ -79,27 +67,31 @@ body{background:var(--app-bg);font-family:-apple-system,BlinkMacSystemFont,"Sego
 .bar-wrap{height:4px;background:var(--surface);border-radius:2px;overflow:hidden;
   margin-top:6px}
 .bar-fill{height:4px;border-radius:2px}
-.ai-panel{background:var(--surface);border-radius:12px;padding:14px;margin-bottom:12px;
-  min-height:80px}
-.ai-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.ai-title{font-size:13px;font-weight:600}
-.ai-sub{font-size:11px;color:var(--tx3)}
-.ai-body{font-size:13px;color:var(--tx2);line-height:1.65}
-.ai-ph{font-size:13px;color:var(--tx3);font-style:italic}
+.dot-d{background:var(--danger)}.dot-w{background:var(--warn)}.dot-ok{background:var(--ok)}
 .abar{border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:12px;
   line-height:1.55;background:var(--warn-bg);color:var(--warn-tx)}
-.btn{font-size:12px;padding:7px 13px;border:1px solid var(--border-md);
-  border-radius:8px;background:var(--card-bg);color:var(--tx1);cursor:pointer;
-  font-family:inherit}
-.btn:active{transform:scale(.98)}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap}
-.dot-d{background:var(--danger)}.dot-w{background:var(--warn)}.dot-ok{background:var(--ok)}
-.sec-title{font-size:13px;font-weight:600;margin-bottom:8px}
+.sec-title{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;
+  align-items:center;gap:6px}
 .hist-entry{display:flex;gap:10px;align-items:center;padding:9px 0;
   border-bottom:1px solid var(--border)}
 .hist-date{font-size:11px;color:var(--tx3);flex:0 0 42px}
 .hist-pill{font-size:13px;font-weight:600;flex:0 0 44px;text-align:center}
-canvas{max-width:100%}
+/* AI 분석 카드 */
+.ai-card{background:var(--surface);border-radius:12px;padding:14px 16px;
+  margin-bottom:12px}
+.ai-card-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai-flag{font-size:16px}
+.ai-card-title{font-size:13px;font-weight:600}
+.ai-card-meta{font-size:10px;color:var(--tx3)}
+.ai-card-body{font-size:13px;color:var(--tx2);line-height:1.7}
+.ai-summary{background:linear-gradient(135deg,var(--ok-bg),var(--surface));
+  border:1px solid var(--border);border-radius:12px;padding:16px}
+.ai-summary .ai-card-title{font-size:14px}
+.score-row{display:flex;gap:8px;margin-bottom:14px}
+.score-mini{flex:1;background:var(--card-bg);border:1px solid var(--border);
+  border-radius:10px;padding:12px;text-align:center}
+.sm-lb{font-size:11px;color:var(--tx3);margin-bottom:4px}
+.sm-num{font-size:26px;font-weight:600}
 .loading{text-align:center;padding:40px;color:var(--tx3);font-size:13px}
 </style>
 </head>
@@ -113,55 +105,21 @@ canvas{max-width:100%}
   <div class="market-switch">
     <button class="ms-btn active" data-mkt="kr">🇰🇷 한국</button>
     <button class="ms-btn" data-mkt="us">🇺🇸 미국</button>
-    <button class="ms-btn" data-mkt="total">통합</button>
+    <button class="ms-btn" data-mkt="summary">종합</button>
   </div>
 
   <div id="body"><div class="loading">데이터 불러오는 중...</div></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// ====== AI 키 (선택, 로컬에서만 사용 권장) ======
-const ANTHROPIC_API_KEY = "";
-
-const META = {
-  // 한국
-  vkospi:{th:'안정<15 / 주의15~20 / 위험>20',rng:[0,83],
-    p:'VKOSPI 현재값의 공포 구간 해석'},
-  usdkrw:{th:'안정<1350 / 주의1350~1400 / 위험>1400',rng:[1200,1600],
-    p:'달러원 환율이 외국인 수급에 주는 영향'},
-  foreigner:{th:'안정 순매수 / 주의 소폭매도 / 위험 대규모연속',rng:null,
-    p:'외국인 순매수 수급 추세'},
-  bbb:{th:'안정<200 / 주의200~300 / 위험>300bp',rng:[0,400],
-    p:'BBB- 스프레드의 크레딧 신호'},
-  spread:{th:'안정>30 / 주의0~30 / 위험<0bp',rng:[-30,80],
-    p:'국고채 장단기 스프레드의 경기 시사점'},
-  cp:{th:'안정<50 / 주의50~100 / 위험>100bp',rng:[0,150],
-    p:'CP 스프레드와 단기 유동성'},
-  semi:{th:'안정>10 / 주의0~10 / 위험<0%',rng:[0,160],
-    p:'반도체 수출 증가율의 펀더멘털 의미'},
-  cds:{th:'안정<50 / 주의50~80 / 위험>80bp',rng:[0,120],
-    p:'한국 CDS와 국가신용 리스크'},
-  // 미국
-  vix:{th:'안정<20 / 주의20~30 / 위험>30',rng:[0,50],
-    p:'미국 VIX 공포지수 해석'},
-  hy:{th:'안정<4 / 주의4~6 / 위험>6%',rng:[0,10],
-    p:'미국 하이일드 스프레드와 크레딧 시장 스트레스'},
-  wti:{th:'안정<85 / 주의85~100 / 위험>100$',rng:[40,130],
-    p:'WTI 유가가 인플레이션에 주는 영향'},
-  brent:{th:'안정<90 / 주의90~105 / 위험>105$',rng:[40,140],
-    p:'브렌트유 동향과 글로벌 에너지 비용'},
-  us2y:{th:'안정<4 / 주의4~4.8 / 위험>4.8%',rng:[0,6],
-    p:'미국 2년물 금리와 통화정책 기대'},
-  us10y:{th:'안정<4.5 / 주의4.5~5 / 위험>5%',rng:[0,6.5],
-    p:'미국 10년물 금리와 글로벌 자산가격'},
-  us30y:{th:'안정<5 / 주의5~5.5 / 위험>5.5%',rng:[0,7],
-    p:'미국 30년물 금리와 재정 리스크'},
-  usspread:{th:'안정>0.3 / 주의0~0.3 / 위험<0%p',rng:[-1,2],
-    p:'미국 장단기 스프레드의 경기침체 신호'},
+const META={
+  vkospi:{rng:[0,83]}, usdkrw:{rng:[1200,1600]}, foreigner:{rng:null},
+  bbb:{rng:[0,400]}, spread:{rng:[-30,80]}, cp:{rng:[0,150]},
+  semi:{rng:[0,160]}, cds:{rng:[0,120]},
+  vix:{rng:[0,50]}, hy:{rng:[0,10]}, wti:{rng:[40,130]}, brent:{rng:[40,140]},
+  us2y:{rng:[0,6]}, us10y:{rng:[0,6.5]}, us30y:{rng:[0,7]}, usspread:{rng:[-1,2]},
 };
 const SRC={naver:'자동수집',fred:'FRED 자동',manual:'수동입력',fallback:'직전값 유지'};
-
 const SCEN={
   kr:[
     {p:'가능성 중상',c:'warn',t:'박스권 소화',
@@ -175,13 +133,13 @@ const SCEN={
   ],
   us:[
     {p:'가능성 중상',c:'warn',t:'고금리 장기화',
-     b:'CPI·PPI 둔화 지연 시 연준 인하 지연. 10Y 4.5%+ 고착, 위험자산 압박.'},
+     b:'CPI·PPI 둔화 지연 시 연준 인하 지연. 10Y 4.5%+ 고착.'},
     {p:'가능성 중',c:'warn',t:'유가發 인플레 재점화',
-     b:'WTI 100$+ / 브렌트 105$+ 지속 시 CPI 반등, 금리 추가 상승.'},
+     b:'WTI 100$+ / 브렌트 105$+ 지속 시 CPI 반등.'},
     {p:'가능성 낮음',c:'danger',t:'장단기 역전 재발',
-     b:'단기금리 급등으로 10Y-2Y 역전 시 경기침체 우려 부각.'},
+     b:'단기금리 급등으로 10Y-2Y 역전 시 침체 우려 부각.'},
     {p:'가능성 낮음',c:'ok',t:'디스인플레 재개',
-     b:'CPI 3% 하회 + 유가 안정 시 연준 인하 기대 회복, VIX 하락.'},
+     b:'CPI 3% 하회 + 유가 안정 시 연준 인하 기대 회복.'},
   ],
 };
 const CHK={
@@ -193,7 +151,7 @@ const CHK={
     {c:'var(--ok)',t:'반도체 펀더멘털 점검',d:'수출 증가율 플러스면 구조적 동력 유효.'},
   ],
   us:[
-    {c:'var(--danger)',t:'CPI·PPI 발표 (매월 중순)',d:'3% 상회 지속 시 연준 인하 지연. 금리 추가 상승 압력.'},
+    {c:'var(--danger)',t:'CPI·PPI 발표 (매월 중순)',d:'3% 상회 지속 시 연준 인하 지연.'},
     {c:'var(--danger)',t:'미국 10Y 5% 돌파 여부',d:'5% 상회 시 글로벌 위험자산 동반 조정.'},
     {c:'var(--warn)',t:'장단기 스프레드 역전 여부',d:'0%p 하회 시 경기침체 선행 신호.'},
     {c:'var(--warn)',t:'WTI 100$ / 브렌트 105$ 돌파',d:'에너지發 인플레 재점화 임계선.'},
@@ -203,10 +161,10 @@ const CHK={
 
 let DATA=null, curMkt='kr', curTab='dashboard';
 
-function scoreColor(s){return s>=55?'var(--ok)':s>=40?'var(--warn)':'var(--danger)';}
-function scoreBg(s){return s>=55?'var(--ok-bg)':s>=45?'var(--warn-bg)':'var(--danger-bg)';}
-function scoreTx(s){return s>=55?'var(--ok-tx)':s>=45?'var(--warn-tx)':'var(--danger-tx)';}
-function scoreLabel(s){
+function sColor(s){return s>=55?'var(--ok)':s>=40?'var(--warn)':'var(--danger)';}
+function sBg(s){return s>=55?'var(--ok-bg)':s>=45?'var(--warn-bg)':'var(--danger-bg)';}
+function sTx(s){return s>=55?'var(--ok-tx)':s>=45?'var(--warn-tx)':'var(--danger-tx)';}
+function sLabel(s){
   if(s>=65)return'안정';if(s>=55)return'숨고르기';
   if(s>=45)return'위험 우세';if(s>=38)return'위기 국면';return'위기 심화';}
 function stColor(s){return s==='ok'?'var(--ok)':s==='danger'?'var(--danger)':'var(--warn)';}
@@ -217,48 +175,47 @@ function barPct(id,v){
   if(!r)return 50;
   return Math.max(5,Math.min(97,(v-r[0])/(r[1]-r[0])*100));
 }
+function fmtDate(d){
+  if(!d)return'';
+  return d.slice(0,4)+'년 '+(+d.slice(5,7))+'월 데이터';
+}
 
-function tabBar(){
-  return `<div class="tab-bar">
+function render(){
+  if(curMkt==='summary'){renderSummary();return;}
+  const m=DATA[curMkt],inds=m.indicators,score=m.score;
+  let h=`<div class="tab-bar">
     <button class="tab ${curTab==='dashboard'?'active':''}" data-tab="dashboard">대시보드</button>
-    <button class="tab ${curTab==='history'?'active':''}" data-tab="history">히스토리</button>
     <button class="tab ${curTab==='scenario'?'active':''}" data-tab="scenario">시나리오</button>
     <button class="tab ${curTab==='checklist'?'active':''}" data-tab="checklist">체크리스트</button>
   </div>`;
-}
-
-function renderMarket(){
-  if(curMkt==='total'){renderTotal();return;}
-  const m=DATA[curMkt], inds=m.indicators, score=m.score;
-  let h=tabBar();
 
   // 대시보드
-  h+=`<div class="view ${curTab==='dashboard'?'active':''}" id="v-dash">`;
-  h+=`<div class="score-banner" style="background:${scoreBg(score)}">
-    <div class="score-num" style="color:${scoreTx(score)}">${score}</div>
-    <div><div class="score-title" style="color:${scoreTx(score)}">${scoreLabel(score)} · ${curMkt==='kr'?'한국':'미국'} 시장</div>
-    <div class="score-sub" style="color:${scoreTx(score)}">${curMkt==='kr'?'코스피 '+(m.kospi?m.kospi.toLocaleString():'-'):'8개 지표 종합'} · 100점 만점(낮을수록 위험)</div></div></div>`;
+  h+=`<div class="view ${curTab==='dashboard'?'active':''}">`;
+  h+=`<div class="score-banner" style="background:${sBg(score)}">
+    <div class="score-num" style="color:${sTx(score)}">${score}</div>
+    <div><div class="score-title" style="color:${sTx(score)}">${sLabel(score)} · ${curMkt==='kr'?'한국':'미국'} 시장</div>
+    <div class="score-sub" style="color:${sTx(score)}">${curMkt==='kr'?'코스피 '+(m.kospi?m.kospi.toLocaleString():'-'):'8개 지표 종합'} · 100점 만점(낮을수록 위험)</div></div></div>`;
 
-  // 미국이면 CPI/PPI 배너
   if(curMkt==='us'&&m.macro){
     h+='<div class="macro-banner">';
     ['cpi','ppi'].forEach(k=>{
       const x=m.macro[k];if(!x)return;
-      h+=`<div class="mb-card" style="background:${scoreBg(x.status==='ok'?60:x.status==='warn'?48:30)}">
-        <div class="mb-lb" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.label}</div>
-        <div class="mb-val" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.value||'-'}</div>
-        <div class="mb-date" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.date?x.date.slice(0,4)+'년 '+(+x.date.slice(5,7))+'월 데이터':''}</div></div>`;
+      const sc=x.status==='ok'?60:x.status==='warn'?48:30;
+      h+=`<div class="mb-card" style="background:${sBg(sc)}">
+        <div class="mb-lb" style="color:${sTx(sc)}">${x.label}</div>
+        <div class="mb-val" style="color:${sTx(sc)}">${x.value||'-'}</div>
+        <div class="mb-date" style="color:${sTx(sc)}">${fmtDate(x.date)}</div></div>`;
     });
     h+='</div>';
   }
 
   const fb=inds.filter(i=>i.source==='fallback').length;
-  if(fb>0)h+=`<div class="abar">⚠ ${fb}개 지표가 자동수집 실패로 직전값 유지 중. 점검이 필요할 수 있습니다.</div>`;
+  if(fb>0)h+=`<div class="abar">⚠ ${fb}개 지표가 자동수집 실패로 직전값 유지 중입니다.</div>`;
 
   h+='<div class="ind-grid">';
   inds.forEach(ind=>{
     const dc=ind.status==='danger'?'dot-d':ind.status==='warn'?'dot-w':'dot-ok';
-    h+=`<div class="ind-card" data-id="${ind.id}">
+    h+=`<div class="ind-card">
       <div class="ic-top"><div class="ic-label">${ind.label}</div>
         <span class="ic-dot ${dc}"></span></div>
       <div class="ic-val">${ind.value!=null?ind.value:'-'}<span style="font-size:12px;font-weight:400;color:var(--tx2)">${ind.unit}</span></div>
@@ -267,29 +224,16 @@ function renderMarket(){
       <div class="ic-src" style="color:var(--tx3)">${SRC[ind.source]||ind.source}</div>
     </div>`;
   });
-  h+='</div>';
-  h+=`<div class="ai-panel">
-    <div class="ai-hd"><span style="font-size:15px">✦</span>
-    <div><div class="ai-title" id="ai-title">AI 해석</div>
-    <div class="ai-sub" id="ai-sub">지표 카드를 누르면 분석합니다</div></div></div>
-    <div id="ai-body" class="ai-ph">카드를 누르거나 종합 진단 버튼을 사용하세요.${ANTHROPIC_API_KEY?'':' (AI 기능은 API 키 입력 시 작동)'}</div></div>
-    <div class="btn-row"><button class="btn" id="btn-all">종합 진단</button></div>`;
-  h+='</div>';
-
-  // 히스토리
-  h+=`<div class="view ${curTab==='history'?'active':''}">
-    <div class="sec-title">건전성 점수 추이</div>
-    <div style="position:relative;height:200px;margin-bottom:16px"><canvas id="histChart"></canvas></div>
-    <div class="sec-title">기록 목록</div><div id="hist-list"></div></div>`;
+  h+='</div></div>';
 
   // 시나리오
   h+=`<div class="view ${curTab==='scenario'?'active':''}">
     <div class="sec-title">단기 시나리오</div><div class="ind-grid">`;
   SCEN[curMkt].forEach(s=>{
-    h+=`<div class="ind-card" style="cursor:default">
+    const sc=s.c==='ok'?60:s.c==='warn'?48:30;
+    h+=`<div class="ind-card">
       <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:4px;
-        background:${scoreBg(s.c==='ok'?60:s.c==='warn'?48:30)};
-        color:${scoreTx(s.c==='ok'?60:s.c==='warn'?48:30)}">${s.p}</span>
+        background:${sBg(sc)};color:${sTx(sc)}">${s.p}</span>
       <div style="font-size:12px;font-weight:600;margin:5px 0 3px">${s.t}</div>
       <div style="font-size:11px;color:var(--tx2);line-height:1.55">${s.b}</div></div>`;
   });
@@ -308,134 +252,46 @@ function renderMarket(){
   h+='</div>';
 
   document.getElementById('body').innerHTML=h;
-  bindEvents();
-  if(curTab==='history')renderHistChart();
-}
-
-function renderTotal(){
-  const k=DATA.kr.score,u=DATA.us.score,t=DATA.total_score;
-  let h=`<div class="score-banner" style="background:${scoreBg(t)}">
-    <div class="score-num" style="color:${scoreTx(t)}">${t}</div>
-    <div><div class="score-title" style="color:${scoreTx(t)}">${scoreLabel(t)} · 글로벌 통합</div>
-    <div class="score-sub" style="color:${scoreTx(t)}">한국·미국 16개 지표 종합 평균</div></div></div>`;
-  h+=`<div class="dual-score">
-    <div class="ds-card"><div class="ds-lb">🇰🇷 한국</div>
-      <div class="ds-num" style="color:${scoreColor(k)}">${k}</div></div>
-    <div class="ds-card"><div class="ds-lb">🇺🇸 미국</div>
-      <div class="ds-num" style="color:${scoreColor(u)}">${u}</div></div>
-    <div class="ds-card"><div class="ds-lb">통합</div>
-      <div class="ds-num" style="color:${scoreColor(t)}">${t}</div></div></div>`;
-  h+=`<div class="sec-title">통합 점수 추이</div>
-    <div style="position:relative;height:220px;margin-bottom:12px"><canvas id="totalChart"></canvas></div>`;
-  h+=`<div class="ai-panel">
-    <div class="ai-hd"><span style="font-size:15px">✦</span>
-    <div><div class="ai-title" id="ai-title">글로벌 종합 진단</div>
-    <div class="ai-sub" id="ai-sub">한국·미국 16개 지표 기반</div></div></div>
-    <div id="ai-body" class="ai-ph">아래 버튼으로 한·미 통합 진단을 요청하세요.</div></div>
-    <div class="btn-row"><button class="btn" id="btn-total">글로벌 종합 진단</button></div>`;
-  document.getElementById('body').innerHTML=h;
-
-  const ctx=document.getElementById('totalChart');
-  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
-  new Chart(ctx,{type:'line',
-    data:{labels:DATA.history.map(x=>x.date),datasets:[
-      {label:'한국',data:DATA.history.map(x=>x.kr),borderColor:'#E24B4A',
-       borderDash:[4,3],pointRadius:3,tension:0.3,borderWidth:2},
-      {label:'미국',data:DATA.history.map(x=>x.us),borderColor:'#378ADD',
-       borderDash:[],pointRadius:3,tension:0.3,borderWidth:2},
-      {label:'통합',data:DATA.history.map(x=>x.total),borderColor:'#1D9E75',
-       pointRadius:4,tension:0.3,borderWidth:2.5}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{font:{size:11},boxWidth:12}}},
-      scales:{y:{min:0,max:100,ticks:{font:{size:11}},
-        grid:{color:dark?'rgba(255,255,255,.1)':'rgba(0,0,0,.1)'}},
-        x:{ticks:{font:{size:11}},grid:{display:false}}}}});
-
-  const btn=document.getElementById('btn-total');
-  if(btn)btn.onclick=()=>{
-    const ks=DATA.kr.indicators.map(i=>`${i.label}:${i.value}${i.unit}`).join(', ');
-    const us=DATA.us.indicators.map(i=>`${i.label}:${i.value}${i.unit}`).join(', ');
-    callAI(`한국 지표: ${ks}. 미국 지표: ${us}. 한미 양국 시장을 통합 진단하고 상호 연관성과 핵심 리스크를 분석`,
-      '글로벌 종합 진단','한국·미국 통합');
-  };
-}
-
-function renderHistChart(){
-  const ctx=document.getElementById('histChart');
-  if(!ctx)return;
-  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
-  const key=curMkt;
-  new Chart(ctx,{type:'line',
-    data:{labels:DATA.history.map(h=>h.date),
-      datasets:[{data:DATA.history.map(h=>h[key]),
-        borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.1)',
-        pointBackgroundColor:DATA.history.map(h=>scoreColor(h[key])),
-        pointRadius:5,fill:true,tension:0.3,borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{y:{min:0,max:100,ticks:{font:{size:11}},
-        grid:{color:dark?'rgba(255,255,255,.1)':'rgba(0,0,0,.1)'}},
-        x:{ticks:{font:{size:11}},grid:{display:false}}}}});
-  document.getElementById('hist-list').innerHTML=
-    [...DATA.history].reverse().map(h=>{
-      const v=h[key];
-      return `<div class="hist-entry"><div class="hist-date">${h.date}</div>
-        <div class="hist-pill" style="color:${scoreColor(v)}">${v}</div>
-        <div style="font-size:12px;color:var(--tx2)">${scoreLabel(v)}</div></div>`;
-    }).join('');
-}
-
-let loading=false;
-async function callAI(prompt,title,sub){
-  if(loading)return;
-  const body=document.getElementById('ai-body');
-  if(!ANTHROPIC_API_KEY){
-    if(body)body.innerHTML='<span class="ai-ph">AI 해석을 쓰려면 index.html 상단 ANTHROPIC_API_KEY 에 키를 입력하세요.</span>';
-    return;
-  }
-  loading=true;
-  if(document.getElementById('ai-title'))document.getElementById('ai-title').textContent=title;
-  if(document.getElementById('ai-sub'))document.getElementById('ai-sub').textContent=sub;
-  if(body)body.innerHTML='<span class="ai-ph">분석 중...</span>';
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,
-        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
-        system:'한국·미국 증시 전문 애널리스트. 3~4문장, 핵심만, 한국어, 평문.',
-        messages:[{role:'user',content:prompt}]})});
-    const d=await r.json();
-    const t=(d.content||[]).map(b=>b.text||'').join('')||'응답 오류';
-    if(body)body.innerHTML=`<div class="ai-body">${t}</div>`;
-  }catch(e){
-    if(body)body.innerHTML='<span class="ai-ph">API 연결 오류</span>';
-  }
-  loading=false;
-}
-
-function bindEvents(){
   document.querySelectorAll('.tab').forEach(t=>{
-    t.onclick=()=>{curTab=t.dataset.tab;renderMarket();};
+    t.onclick=()=>{curTab=t.dataset.tab;render();};
   });
-  document.querySelectorAll('.ind-card[data-id]').forEach(c=>{
-    c.onclick=()=>{
-      document.querySelectorAll('.ind-card').forEach(x=>x.classList.remove('selected'));
-      c.classList.add('selected');
-      const m=DATA[curMkt];
-      const ind=m.indicators.find(i=>i.id===c.dataset.id);
-      const snap=m.indicators.map(i=>`${i.label}:${i.value}${i.unit}`).join(', ');
-      callAI(`${curMkt==='kr'?'한국':'미국'} 시장 현재 지표: ${snap}. ${META[c.dataset.id].p}을 분석`,
-        ind.label+' 분석',META[c.dataset.id].th);
-    };
-  });
-  const ba=document.getElementById('btn-all');
-  if(ba)ba.onclick=()=>{
-    const m=DATA[curMkt];
-    const snap=m.indicators.map(i=>`${i.label}:${i.value}${i.unit}(${i.status})`).join(', ');
-    callAI(`${curMkt==='kr'?'한국':'미국'} 시장 8개 지표: ${snap}. 종합 건전성을 진단하고 리스크 순위와 대응 방향 제시`,
-      (curMkt==='kr'?'한국':'미국')+' 종합 진단','8개 지표 전체');
-  };
+}
+
+function renderSummary(){
+  const k=DATA.kr.score, u=DATA.us.score;
+  const ai=DATA.ai||{};
+  let h='';
+
+  // 한국·미국 점수 요약
+  h+=`<div class="score-row">
+    <div class="score-mini"><div class="sm-lb">🇰🇷 한국</div>
+      <div class="sm-num" style="color:${sColor(k)}">${k}</div></div>
+    <div class="score-mini"><div class="sm-lb">🇺🇸 미국</div>
+      <div class="sm-num" style="color:${sColor(u)}">${u}</div></div>
+  </div>`;
+
+  // 한국 AI 해석
+  h+=`<div class="ai-card">
+    <div class="ai-card-hd"><span class="ai-flag">🇰🇷</span>
+    <div><div class="ai-card-title">한국 시장 AI 해석</div>
+    <div class="ai-card-meta">${DATA.updated_kr||''} 기준 · 건전성 ${k}/100</div></div></div>
+    <div class="ai-card-body">${ai.kr||'분석 대기 중'}</div></div>`;
+
+  // 미국 AI 해석
+  h+=`<div class="ai-card">
+    <div class="ai-card-hd"><span class="ai-flag">🇺🇸</span>
+    <div><div class="ai-card-title">미국 시장 AI 해석</div>
+    <div class="ai-card-meta">${DATA.updated_us||''} 기준 · 건전성 ${u}/100</div></div></div>
+    <div class="ai-card-body">${ai.us||'분석 대기 중'}</div></div>`;
+
+  // 종합 요약
+  h+=`<div class="ai-summary">
+    <div class="ai-card-hd"><span class="ai-flag">✦</span>
+    <div><div class="ai-card-title">글로벌 종합 요약</div>
+    <div class="ai-card-meta">한국·미국 16개 지표 통합 분석</div></div></div>
+    <div class="ai-card-body">${ai.summary||'한국·미국 분석이 모두 생성되면 표시됩니다.'}</div></div>`;
+
+  document.getElementById('body').innerHTML=h;
 }
 
 document.querySelectorAll('.ms-btn').forEach(b=>{
@@ -443,7 +299,7 @@ document.querySelectorAll('.ms-btn').forEach(b=>{
     document.querySelectorAll('.ms-btn').forEach(x=>x.classList.remove('active'));
     b.classList.add('active');
     curMkt=b.dataset.mkt;curTab='dashboard';
-    renderMarket();
+    render();
   };
 });
 
@@ -451,8 +307,11 @@ fetch('data.json?t='+Date.now())
   .then(r=>r.json())
   .then(d=>{
     DATA=d;
-    document.getElementById('upd').textContent='업데이트: '+(d.updated_kst||d.updated);
-    renderMarket();
+    const uk=d.updated_kr?'한국 '+d.updated_kr:'';
+    const uu=d.updated_us?'미국 '+d.updated_us:'';
+    document.getElementById('upd').innerHTML=
+      (uk?uk+'<br>':'')+(uu||d.updated_kst||'');
+    render();
   })
   .catch(e=>{
     document.getElementById('body').innerHTML=

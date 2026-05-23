@@ -1,54 +1,11 @@
 {
-  "updated": "2026-05-23",
-  "updated_kst": "2026-05-23 21:14 KST",
-  "total_score": 50,
-  "history": [
-    {
-      "date": "5/15",
-      "kr": 41,
-      "us": 44,
-      "total": 43
-    },
-    {
-      "date": "5/18",
-      "kr": 52,
-      "us": 47,
-      "total": 50
-    },
-    {
-      "date": "5/19",
-      "kr": 38,
-      "us": 41,
-      "total": 40
-    },
-    {
-      "date": "5/20",
-      "kr": 36,
-      "us": 44,
-      "total": 40
-    },
-    {
-      "date": "5/21",
-      "kr": 61,
-      "us": 56,
-      "total": 59
-    },
-    {
-      "date": "5/22",
-      "kr": 56,
-      "us": 50,
-      "total": 53
-    },
-    {
-      "date": "5/23",
-      "kr": 44,
-      "us": 56,
-      "total": 50
-    }
-  ],
+  "updated": "2026-05-22",
+  "updated_kst": "2026-05-22 17:00 KST",
+  "updated_kr": "2026-05-22 17:00 KST",
+  "updated_us": "2026-05-22 08:00 KST",
   "kr": {
-    "score": 44,
-    "kospi": null,
+    "score": 56,
+    "kospi": 7847.71,
     "indicators": [
       {
         "id": "vkospi",
@@ -58,17 +15,17 @@
         "raw": 62.0,
         "unit": "",
         "status": "danger",
-        "source": "fallback"
+        "source": "manual"
       },
       {
         "id": "usdkrw",
         "label": "USD/KRW",
         "cat": "환율·수급",
-        "value": "1,519.0",
-        "raw": 1519.0,
+        "value": "1,517.2",
+        "raw": 1517.2,
         "unit": "원",
         "status": "danger",
-        "source": "naver"
+        "source": "manual"
       },
       {
         "id": "foreigner",
@@ -78,7 +35,7 @@
         "raw": -19000.0,
         "unit": "",
         "status": "danger",
-        "source": "fallback"
+        "source": "manual"
       },
       {
         "id": "bbb",
@@ -98,7 +55,7 @@
         "raw": 20,
         "unit": "bp",
         "status": "warn",
-        "source": "fallback"
+        "source": "manual"
       },
       {
         "id": "cp",
@@ -133,47 +90,47 @@
     ]
   },
   "us": {
-    "score": 56,
+    "score": 50,
     "indicators": [
       {
         "id": "vix",
         "label": "VIX",
         "cat": "변동성",
-        "value": "16.8",
-        "raw": 16.76,
+        "value": "24.5",
+        "raw": 24.5,
         "unit": "",
-        "status": "ok",
-        "source": "fred"
+        "status": "warn",
+        "source": "manual"
       },
       {
         "id": "hy",
         "label": "HY 스프레드",
         "cat": "크레딧",
-        "value": "2.78",
-        "raw": 2.78,
+        "value": "3.85",
+        "raw": 3.85,
         "unit": "%",
         "status": "ok",
-        "source": "fred"
+        "source": "manual"
       },
       {
         "id": "wti",
         "label": "WTI 유가",
         "cat": "원자재",
-        "value": "112.2",
-        "raw": 112.25,
+        "value": "102.4",
+        "raw": 102.4,
         "unit": "$",
         "status": "danger",
-        "source": "fred"
+        "source": "manual"
       },
       {
         "id": "brent",
         "label": "브렌트유",
         "cat": "원자재",
-        "value": "116.7",
-        "raw": 116.73,
+        "value": "110.8",
+        "raw": 110.8,
         "unit": "$",
         "status": "danger",
-        "source": "fred"
+        "source": "manual"
       },
       {
         "id": "us2y",
@@ -183,37 +140,37 @@
         "raw": 4.08,
         "unit": "%",
         "status": "warn",
-        "source": "fred"
+        "source": "manual"
       },
       {
         "id": "us10y",
         "label": "미국 10Y",
         "cat": "금리",
-        "value": "4.57",
-        "raw": 4.57,
+        "value": "4.60",
+        "raw": 4.6,
         "unit": "%",
         "status": "warn",
-        "source": "fred"
+        "source": "manual"
       },
       {
         "id": "us30y",
         "label": "미국 30Y",
         "cat": "금리",
-        "value": "5.10",
-        "raw": 5.1,
+        "value": "5.16",
+        "raw": 5.16,
         "unit": "%",
-        "status": "warn",
-        "source": "fred"
+        "status": "danger",
+        "source": "manual"
       },
       {
         "id": "usspread",
         "label": "장단기 10Y-2Y",
         "cat": "금리곡선",
-        "value": "+0.43",
-        "raw": 0.43,
+        "value": "+0.52",
+        "raw": 0.52,
         "unit": "%p",
         "status": "ok",
-        "source": "fred"
+        "source": "manual"
       }
     ],
     "macro": {
@@ -232,5 +189,10 @@
         "status": "danger"
       }
     }
+  },
+  "ai": {
+    "kr": "분석 대기 중입니다. 워크플로가 처음 실행되면 이 자리에 한국 시장 AI 분석이 표시됩니다.",
+    "us": "분석 대기 중입니다. 워크플로가 처음 실행되면 이 자리에 미국 시장 AI 분석이 표시됩니다.",
+    "summary": "한국·미국 양쪽 분석이 모두 생성되면 이 자리에 글로벌 종합 요약이 표시됩니다."
   }
 }
