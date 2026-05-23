@@ -311,7 +311,7 @@ def main():
     wti_f, _ = fred_latest("DCOILWTICO")
     brent_f, _ = fred_latest("DCOILBRENTEU")
     cpi_yoy, cpi_date = fred_yoy("CPIAUCSL")
-    ppi_yoy, ppi_date = fred_yoy("PPIACO")
+    ppi_yoy, ppi_date = fred_yoy("PPIFIS")
 
     nv = get_us_market_naver()
     vix = vix_f if vix_f is not None else nv["vix"]
