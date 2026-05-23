@@ -1,11 +1,11 @@
 {
   "updated": "2026-05-23",
-  "updated_kst": "2026-05-23 23:14 KST",
-  "updated_kr": "2026-05-22 17:00 KST",
+  "updated_kst": "2026-05-23 23:16 KST",
+  "updated_kr": "2026-05-23 23:16 KST",
   "updated_us": "2026-05-23 23:14 KST",
   "kr": {
-    "score": 56,
-    "kospi": 7847.71,
+    "score": 44,
+    "kospi": null,
     "indicators": [
       {
         "id": "vkospi",
@@ -15,17 +15,17 @@
         "raw": 62.0,
         "unit": "",
         "status": "danger",
-        "source": "manual"
+        "source": "fallback"
       },
       {
         "id": "usdkrw",
         "label": "USD/KRW",
         "cat": "환율·수급",
-        "value": "1,517.2",
-        "raw": 1517.2,
+        "value": "1,519.0",
+        "raw": 1519.0,
         "unit": "원",
         "status": "danger",
-        "source": "manual"
+        "source": "naver"
       },
       {
         "id": "foreigner",
@@ -35,7 +35,7 @@
         "raw": -19000.0,
         "unit": "",
         "status": "danger",
-        "source": "manual"
+        "source": "fallback"
       },
       {
         "id": "bbb",
@@ -55,7 +55,7 @@
         "raw": 20,
         "unit": "bp",
         "status": "warn",
-        "source": "manual"
+        "source": "fallback"
       },
       {
         "id": "cp",
