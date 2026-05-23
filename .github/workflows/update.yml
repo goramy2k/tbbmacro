@@ -21,6 +21,8 @@ jobs:
           python-version: '3.12'
 
       - name: 지표 수집 스크립트 실행
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python scraper.py
 
       - name: data.json 변경사항 커밋
