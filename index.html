@@ -247,7 +247,7 @@ function renderMarket(){
       h+=`<div class="mb-card" style="background:${scoreBg(x.status==='ok'?60:x.status==='warn'?48:30)}">
         <div class="mb-lb" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.label}</div>
         <div class="mb-val" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.value||'-'}</div>
-        <div class="mb-date" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.date||''} 발표 기준</div></div>`;
+        <div class="mb-date" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.date?x.date.slice(0,7)+' 데이터':''}</div></div>`;
     });
     h+='</div>';
   }
