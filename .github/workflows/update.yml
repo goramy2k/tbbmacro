@@ -29,11 +29,22 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json
-          if git diff --staged --quiet; then
-            echo "변경사항 없음 - 커밋 건너뜀"
-          else
-            git commit -m "지표 자동 업데이트: $(date -u +'%Y-%m-%d')"
-            git pull --rebase origin main
-            git push
+          if git diff --quiet data.json; then
+            echo "변경사항 없음 - 건너뜀"
+            exit 0
           fi
+          for i in 1 2 3 4 5; do
+            git add data.json
+            git commit -m "지표 자동 업데이트: $(date -u +'%Y-%m-%d')" || exit 0
+            git fetch origin main
+            git rebase origin/main || git rebase --abort
+            if git push origin HEAD:main; then
+              echo "푸시 성공"
+              exit 0
+            fi
+            echo "푸시 충돌 - 재시도 $i"
+            git reset --soft HEAD~1
+            sleep 3
+          done
+          echo "5회 시도 후에도 실패"
+          exit 1
