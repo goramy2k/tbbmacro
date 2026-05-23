@@ -1,8 +1,8 @@
 {
-  "updated": "2026-05-22",
-  "updated_kst": "2026-05-22 17:00 KST",
-  "kospi": 7847.71,
-  "score": 56,
+  "updated": "2026-05-23",
+  "updated_kst": "2026-05-23 15:09 KST",
+  "kospi": null,
+  "score": 44,
   "indicators": [
     {
       "id": "vkospi",
@@ -11,18 +11,18 @@
       "value": "62",
       "raw": 62.0,
       "unit": "",
-      "status": "warn",
-      "source": "manual"
+      "status": "danger",
+      "source": "fallback"
     },
     {
       "id": "usdkrw",
       "label": "USD/KRW",
       "cat": "환율·수급",
-      "value": "1,517.2",
-      "raw": 1517.2,
+      "value": "1,519.0",
+      "raw": 1519.0,
       "unit": "원",
       "status": "danger",
-      "source": "manual"
+      "source": "naver"
     },
     {
       "id": "foreigner",
@@ -32,7 +32,7 @@
       "raw": -19000.0,
       "unit": "",
       "status": "danger",
-      "source": "manual"
+      "source": "fallback"
     },
     {
       "id": "bbb",
@@ -52,7 +52,7 @@
       "raw": 20,
       "unit": "bp",
       "status": "warn",
-      "source": "manual"
+      "source": "fallback"
     },
     {
       "id": "cp",
@@ -113,6 +113,10 @@
     {
       "date": "5/22",
       "score": 56
+    },
+    {
+      "date": "5/23",
+      "score": 44
     }
   ]
 }
