@@ -23,32 +23,27 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: 한국 지표 수집·분석
-        env:
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scraper.py kr
-
       - name: data.json 커밋
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet data.json; then
-            echo "변경사항 없음 - 건너뜀"
-            exit 0
-          fi
+          cp data.json /tmp/data.json
           for i in 1 2 3 4 5; do
-            git add data.json
-            git commit -m "한국 지표 업데이트: $(date -u +'%Y-%m-%d')" || exit 0
             git fetch origin main
-            git rebase origin/main || git rebase --abort
+            git reset --hard origin/main
+            cp /tmp/data.json data.json
+            if git diff --quiet data.json; then
+              echo "변경사항 없음"
+              exit 0
+            fi
+            git add data.json
+            git commit -m "지표 업데이트: $(date -u +'%Y-%m-%d %H:%M')"
             if git push origin HEAD:main; then
               echo "푸시 성공"
               exit 0
             fi
-            echo "푸시 충돌 - 재시도 $i"
-            git reset --soft HEAD~1
-            sleep 3
+            echo "재시도 $i"
+            sleep 5
           done
-          echo "5회 시도 후에도 실패"
+          echo "5회 실패"
           exit 1
