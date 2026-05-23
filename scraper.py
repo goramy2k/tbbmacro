@@ -19,6 +19,7 @@ import re
 import sys
 import datetime
 import urllib.request
+import urllib.error
 
 KST = datetime.timezone(datetime.timedelta(hours=9))
 TODAY = datetime.datetime.now(KST)
@@ -49,6 +50,15 @@ def fetch(url, timeout=20, data=None, headers=None):
         req = urllib.request.Request(url, data=data, headers=h)
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.read().decode("utf-8", errors="ignore")
+    except urllib.error.HTTPError as e:
+        # HTTP 에러 시 응답 본문도 함께 출력 (진단용)
+        try:
+            err_body = e.read().decode("utf-8", errors="ignore")[:300]
+        except Exception:
+            err_body = "(본문 읽기 실패)"
+        print(f"[fetch 실패] {url[:80]} -> HTTP {e.code}: {err_body}",
+              file=sys.stderr)
+        return None
     except Exception as e:
         print(f"[fetch 실패] {url[:80]} -> {e}", file=sys.stderr)
         return None
@@ -229,29 +239,56 @@ def score_of(indicators):
 # Claude AI 분석 생성
 # ===========================================================================
 def claude_analyze(prompt, system):
-    """Claude API 호출. 실패 시 None."""
+    """Claude API 호출. 실패 시 None. urllib 직접 사용 (POST 명시)."""
     if not ANTHROPIC_KEY:
         print("[Claude] API 키 없음 - 분석 건너뜀", file=sys.stderr)
         return None
-    body = json.dumps({
+
+    url = "https://api.anthropic.com/v1/messages"
+    payload = {
         "model": "claude-sonnet-4-20250514",
         "max_tokens": 1000,
         "system": system,
         "messages": [{"role": "user", "content": prompt}],
-    }).encode("utf-8")
-    raw = fetch("https://api.anthropic.com/v1/messages", timeout=60,
-                data=body, headers={
-                    "Content-Type": "application/json",
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                })
-    if not raw:
+    }
+    body = json.dumps(payload).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_KEY,
+        "anthropic-version": "2023-06-01",
+        "User-Agent": "tbbmacro-monitor/1.0",
+    }
+    # POST 메서드를 명시적으로 지정 (data가 있어도 method를 분명히)
+    req = urllib.request.Request(url, data=body, headers=headers,
+                                 method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            raw = r.read().decode("utf-8", errors="ignore")
+    except urllib.error.HTTPError as e:
+        try:
+            err = e.read().decode("utf-8", errors="ignore")[:400]
+        except Exception:
+            err = "(본문 없음)"
+        print(f"[Claude] HTTP {e.code}: {err}", file=sys.stderr)
         return None
+    except Exception as e:
+        print(f"[Claude] 요청 실패: {e}", file=sys.stderr)
+        return None
+
     try:
         d = json.loads(raw)
-        return "".join(b.get("text", "") for b in d.get("content", [])).strip()
+        if d.get("type") == "error":
+            print(f"[Claude] API 오류: {d.get('error')}", file=sys.stderr)
+            return None
+        text = "".join(b.get("text", "") for b in d.get("content", [])
+                       if b.get("type") == "text").strip()
+        if not text:
+            print(f"[Claude] 빈 응답: {raw[:200]}", file=sys.stderr)
+            return None
+        return text
     except Exception as e:
-        print(f"[Claude 파싱 실패] {e}", file=sys.stderr)
+        print(f"[Claude] 파싱 실패: {e} | 응답: {raw[:200]}",
+              file=sys.stderr)
         return None
 
 
