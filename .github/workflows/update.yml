@@ -34,5 +34,6 @@ jobs:
             echo "변경사항 없음 - 커밋 건너뜀"
           else
             git commit -m "지표 자동 업데이트: $(date -u +'%Y-%m-%d')"
+            git pull --rebase origin main
             git push
           fi
