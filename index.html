@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>한국 매크로 모니터</title>
+<title>한국·미국 매크로 모니터</title>
 <style>
 :root{
   --app-bg:#faf9f5; --card-bg:#ffffff; --surface:#f1efe8;
@@ -28,27 +28,44 @@ body{background:var(--app-bg);font-family:-apple-system,BlinkMacSystemFont,"Sego
   "Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--tx1);
   -webkit-font-smoothing:antialiased;padding:16px}
 .wrap{max-width:680px;margin:0 auto}
-.head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px}
 .head h1{font-size:18px;font-weight:600}
 .head .upd{font-size:11px;color:var(--tx3);text-align:right}
+/* 시장 전환 (한국/미국/통합) */
+.market-switch{display:flex;gap:6px;margin:12px 0}
+.ms-btn{flex:1;padding:9px;font-size:13px;font-weight:600;border:1px solid var(--border);
+  border-radius:8px;background:var(--card-bg);color:var(--tx2);cursor:pointer;
+  font-family:inherit}
+.ms-btn.active{background:var(--tx1);color:var(--app-bg);border-color:var(--tx1)}
+/* 하위 탭 */
 .tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;
-  overflow-x:auto;-webkit-overflow-scrolling:touch}
+  overflow-x:auto}
 .tab{padding:9px 13px;font-size:13px;cursor:pointer;border:none;background:none;
   color:var(--tx2);border-bottom:2px solid transparent;white-space:nowrap;
   font-family:inherit}
 .tab.active{color:var(--tx1);border-bottom-color:var(--tx1);font-weight:600}
+.view{display:none}.view.active{display:block}
 .section{display:none}.section.active{display:block}
 .score-banner{display:flex;align-items:center;gap:16px;padding:14px 16px;
   border-radius:12px;margin-bottom:12px}
 .score-num{font-size:46px;font-weight:600;line-height:1}
 .score-title{font-size:14px;font-weight:600;margin-bottom:3px}
 .score-sub{font-size:11px;line-height:1.5;opacity:.85}
+.dual-score{display:flex;gap:8px;margin-bottom:12px}
+.ds-card{flex:1;background:var(--surface);border-radius:10px;padding:12px;text-align:center}
+.ds-lb{font-size:11px;color:var(--tx3);margin-bottom:4px}
+.ds-num{font-size:28px;font-weight:600}
 .trend-strip{background:var(--surface);border-radius:8px;padding:10px 14px;
   margin-bottom:12px;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
-.t-item{text-align:center;flex:0 0 48px}
+.t-item{text-align:center;flex:0 0 50px}
 .t-lb{font-size:10px;color:var(--tx3);margin-bottom:2px}
 .t-sc{font-size:15px;font-weight:600}
 .t-arr{font-size:12px;color:var(--tx3);margin-top:8px}
+.macro-banner{display:flex;gap:8px;margin-bottom:12px}
+.mb-card{flex:1;border-radius:8px;padding:10px 12px}
+.mb-lb{font-size:11px;margin-bottom:2px;font-weight:600}
+.mb-val{font-size:18px;font-weight:600}
+.mb-date{font-size:10px;opacity:.8;margin-top:1px}
 .ind-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
 .ind-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;
   padding:12px 14px;cursor:pointer}
@@ -76,28 +93,12 @@ body{background:var(--app-bg);font-family:-apple-system,BlinkMacSystemFont,"Sego
   font-family:inherit}
 .btn:active{transform:scale(.98)}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}
-.sc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
-.sc-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;
-  padding:12px}
-.chip{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;
-  border-radius:4px}
-.chip-d{background:var(--danger-bg);color:var(--danger-tx)}
-.chip-w{background:var(--warn-bg);color:var(--warn-tx)}
-.chip-o{background:var(--ok-bg);color:var(--ok-tx)}
-.sc-title{font-size:12px;font-weight:600;margin:5px 0 3px}
-.sc-body{font-size:11px;color:var(--tx2);line-height:1.55}
-.cl-item{display:flex;gap:10px;align-items:flex-start;padding:10px;
-  background:var(--surface);border-radius:8px;margin-bottom:8px}
-.cl-t{font-size:13px;font-weight:600;margin-bottom:2px}
-.cl-d{font-size:12px;color:var(--tx2);line-height:1.5}
-.hist-entry{display:flex;gap:12px;align-items:flex-start;padding:10px 0;
-  border-bottom:1px solid var(--border)}
-.hist-date{font-size:11px;color:var(--tx3);flex:0 0 44px;padding-top:3px}
-.hist-score{font-size:18px;font-weight:600;flex:0 0 30px}
-.sec-title{font-size:13px;font-weight:600;margin-bottom:8px}
-.note{background:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;
-  color:var(--tx2);line-height:1.6;margin-top:8px}
 .dot-d{background:var(--danger)}.dot-w{background:var(--warn)}.dot-ok{background:var(--ok)}
+.sec-title{font-size:13px;font-weight:600;margin-bottom:8px}
+.hist-entry{display:flex;gap:10px;align-items:center;padding:9px 0;
+  border-bottom:1px solid var(--border)}
+.hist-date{font-size:11px;color:var(--tx3);flex:0 0 42px}
+.hist-pill{font-size:13px;font-weight:600;flex:0 0 44px;text-align:center}
 canvas{max-width:100%}
 .loading{text-align:center;padding:40px;color:var(--tx3);font-size:13px}
 </style>
@@ -105,252 +106,358 @@ canvas{max-width:100%}
 <body>
 <div class="wrap">
   <div class="head">
-    <h1>한국 매크로 모니터</h1>
+    <h1>한국·미국 매크로 모니터</h1>
     <div class="upd" id="upd">불러오는 중...</div>
   </div>
 
-  <div class="tab-bar">
-    <button class="tab active" data-tab="dashboard">대시보드</button>
-    <button class="tab" data-tab="history">히스토리</button>
-    <button class="tab" data-tab="scenario">시나리오</button>
-    <button class="tab" data-tab="checklist">체크리스트</button>
+  <div class="market-switch">
+    <button class="ms-btn active" data-mkt="kr">🇰🇷 한국</button>
+    <button class="ms-btn" data-mkt="us">🇺🇸 미국</button>
+    <button class="ms-btn" data-mkt="total">통합</button>
   </div>
 
-  <div id="tab-dashboard" class="section active">
-    <div id="dash-body"><div class="loading">데이터 불러오는 중...</div></div>
-  </div>
-  <div id="tab-history" class="section">
-    <div class="sec-title">건전성 점수 추이</div>
-    <div style="position:relative;height:200px;margin-bottom:16px">
-      <canvas id="histChart"></canvas>
-    </div>
-    <div class="sec-title">기록 목록</div>
-    <div id="hist-list"></div>
-  </div>
-  <div id="tab-scenario" class="section">
-    <div class="sec-title">단기 시나리오</div>
-    <div class="sc-grid" id="sc-grid"></div>
-  </div>
-  <div id="tab-checklist" class="section">
-    <div class="sec-title">모니터링 체크리스트</div>
-    <div id="cl-list"></div>
-  </div>
+  <div id="body"><div class="loading">데이터 불러오는 중...</div></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// ====== 설정 ======
-// AI 해석 기능을 쓰려면 본인의 Anthropic API 키를 넣으세요. (선택)
-const ANTHROPIC_API_KEY = "";  // 예: "sk-ant-..."
+// ====== AI 키 (선택, 로컬에서만 사용 권장) ======
+const ANTHROPIC_API_KEY = "";
 
 const META = {
-  vkospi:{icon:'〽',th:'안정<15 / 주의15~20 / 위험>20',
-    prompt:'VKOSPI 현재값의 의미와 공포 구간 해석을 한국 증시 맥락에서 분석'},
-  usdkrw:{icon:'$',th:'안정<1350 / 주의1350~1400 / 위험>1400',
-    prompt:'달러원 환율 현재값이 외국인 수급에 미치는 영향 분석'},
-  foreigner:{icon:'⇄',th:'안정 순매수 / 주의 소폭매도 / 위험 대규모연속',
-    prompt:'외국인 순매수 현재 수급의 의미와 추세 분석'},
-  bbb:{icon:'▤',th:'안정<200bp / 주의200~300bp / 위험>300bp',
-    prompt:'BBB- 스프레드 현재값이 크레딧 시장에 주는 신호 분석'},
-  spread:{icon:'∡',th:'안정>30bp / 주의0~30bp / 위험<0bp',
-    prompt:'국고채 장단기 스프레드 현재값의 경기 시사점 분석'},
-  cp:{icon:'≈',th:'안정<50bp / 주의50~100bp / 위험>100bp',
-    prompt:'CP 스프레드 현재값과 단기 자금시장 유동성 분석'},
-  semi:{icon:'▣',th:'안정>10% / 주의0~10% / 위험<0%',
-    prompt:'반도체 수출 증가율 현재값의 코스피 펀더멘털 의미 분석'},
-  cds:{icon:'⛨',th:'안정<50bp / 주의50~80bp / 위험>80bp',
-    prompt:'한국 CDS 현재값과 국가신용 리스크 분석'},
+  // 한국
+  vkospi:{th:'안정<15 / 주의15~20 / 위험>20',rng:[0,83],
+    p:'VKOSPI 현재값의 공포 구간 해석'},
+  usdkrw:{th:'안정<1350 / 주의1350~1400 / 위험>1400',rng:[1200,1600],
+    p:'달러원 환율이 외국인 수급에 주는 영향'},
+  foreigner:{th:'안정 순매수 / 주의 소폭매도 / 위험 대규모연속',rng:null,
+    p:'외국인 순매수 수급 추세'},
+  bbb:{th:'안정<200 / 주의200~300 / 위험>300bp',rng:[0,400],
+    p:'BBB- 스프레드의 크레딧 신호'},
+  spread:{th:'안정>30 / 주의0~30 / 위험<0bp',rng:[-30,80],
+    p:'국고채 장단기 스프레드의 경기 시사점'},
+  cp:{th:'안정<50 / 주의50~100 / 위험>100bp',rng:[0,150],
+    p:'CP 스프레드와 단기 유동성'},
+  semi:{th:'안정>10 / 주의0~10 / 위험<0%',rng:[0,160],
+    p:'반도체 수출 증가율의 펀더멘털 의미'},
+  cds:{th:'안정<50 / 주의50~80 / 위험>80bp',rng:[0,120],
+    p:'한국 CDS와 국가신용 리스크'},
+  // 미국
+  vix:{th:'안정<20 / 주의20~30 / 위험>30',rng:[0,50],
+    p:'미국 VIX 공포지수 해석'},
+  hy:{th:'안정<4 / 주의4~6 / 위험>6%',rng:[0,10],
+    p:'미국 하이일드 스프레드와 크레딧 시장 스트레스'},
+  wti:{th:'안정<85 / 주의85~100 / 위험>100$',rng:[40,130],
+    p:'WTI 유가가 인플레이션에 주는 영향'},
+  brent:{th:'안정<90 / 주의90~105 / 위험>105$',rng:[40,140],
+    p:'브렌트유 동향과 글로벌 에너지 비용'},
+  us2y:{th:'안정<4 / 주의4~4.8 / 위험>4.8%',rng:[0,6],
+    p:'미국 2년물 금리와 통화정책 기대'},
+  us10y:{th:'안정<4.5 / 주의4.5~5 / 위험>5%',rng:[0,6.5],
+    p:'미국 10년물 금리와 글로벌 자산가격'},
+  us30y:{th:'안정<5 / 주의5~5.5 / 위험>5.5%',rng:[0,7],
+    p:'미국 30년물 금리와 재정 리스크'},
+  usspread:{th:'안정>0.3 / 주의0~0.3 / 위험<0%p',rng:[-1,2],
+    p:'미국 장단기 스프레드의 경기침체 신호'},
 };
-const SRC_LABEL={naver:'자동수집',manual:'수동입력',fallback:'직전값 유지'};
+const SRC={naver:'자동수집',fred:'FRED 자동',manual:'수동입력',fallback:'직전값 유지'};
 
-const SCENARIOS=[
-  {prob:'가능성 중상',cls:'chip-w',title:'박스권 소화',
-   body:'한은 금통위 결과 + 외국인 매도 지속 여부에 따라 등락. 코스닥 펀드 자금이 하방 지지.'},
-  {prob:'가능성 중',cls:'chip-w',title:'상승 재개',
-   body:'금리 인상 + 외국인 순매수 전환 + 환율 안정 동시 충족 시 상단 돌파.'},
-  {prob:'가능성 낮음',cls:'chip-d',title:'추가 조정',
-   body:'미 국채금리 재상승 + 환율 급등 + 크레딧 스프레드 악화 동시 발생 시.'},
-  {prob:'꼬리 위험',cls:'chip-d',title:'유동성 경색',
-   body:'CP 스프레드 100bp+ / BBB- 400bp+ / 환율 1550원+ 동시 발생 시. 개연성 낮음.'},
-];
-const CHECKLIST=[
-  {c:'var(--danger)',t:'1순위 — 한은 금통위 금리 결정',
-   d:'금리 인상 시 원화 강세→외국인 복귀 촉매. 동결 시 환율 압박 지속.'},
-  {c:'var(--danger)',t:'2순위 — 환율 1,510 / 1,520원 돌파 여부',
-   d:'경보선 상회 시 외국인 매도 재가속 가능. 1,490원 이하면 수급 전환 신호.'},
-  {c:'var(--warn)',t:'3순위 — 외국인 코스피 순매수 전환',
-   d:'순매수 전환 = 진정한 추세 반전 1차 신호. 코스닥과 함께 확인.'},
-  {c:'var(--warn)',t:'4순위 — BBB- 300bp 완전 돌파 여부',
-   d:'돌파 확정 시 조정 성격이 차익실현→유동성 경색으로 전환. KOFIA 확인.'},
-  {c:'var(--ok)',t:'유지 — 반도체 펀더멘털 점검',
-   d:'수출 증가율이 플러스인 한 구조적 상승 동력은 유효.'},
-];
+const SCEN={
+  kr:[
+    {p:'가능성 중상',c:'warn',t:'박스권 소화',
+     b:'한은 금통위 + 외국인 매도 지속 여부에 따라 등락. 코스닥 펀드 자금이 하방 지지.'},
+    {p:'가능성 중',c:'warn',t:'상승 재개',
+     b:'금리 인상 + 외국인 순매수 전환 + 환율 안정 동시 충족 시.'},
+    {p:'가능성 낮음',c:'danger',t:'추가 조정',
+     b:'미 국채금리 재상승 + 환율 급등 + 크레딧 악화 동시 발생 시.'},
+    {p:'꼬리 위험',c:'danger',t:'유동성 경색',
+     b:'CP 100bp+ / BBB- 400bp+ / 환율 1550원+ 동시. 개연성 낮음.'},
+  ],
+  us:[
+    {p:'가능성 중상',c:'warn',t:'고금리 장기화',
+     b:'CPI·PPI 둔화 지연 시 연준 인하 지연. 10Y 4.5%+ 고착, 위험자산 압박.'},
+    {p:'가능성 중',c:'warn',t:'유가發 인플레 재점화',
+     b:'WTI 100$+ / 브렌트 105$+ 지속 시 CPI 반등, 금리 추가 상승.'},
+    {p:'가능성 낮음',c:'danger',t:'장단기 역전 재발',
+     b:'단기금리 급등으로 10Y-2Y 역전 시 경기침체 우려 부각.'},
+    {p:'가능성 낮음',c:'ok',t:'디스인플레 재개',
+     b:'CPI 3% 하회 + 유가 안정 시 연준 인하 기대 회복, VIX 하락.'},
+  ],
+};
+const CHK={
+  kr:[
+    {c:'var(--danger)',t:'한은 금통위 금리 결정',d:'인상 시 원화 강세→외국인 복귀. 동결 시 환율 압박 지속.'},
+    {c:'var(--danger)',t:'환율 1,510/1,520원 돌파',d:'경보선. 1,490원 이하면 수급 전환 신호.'},
+    {c:'var(--warn)',t:'외국인 코스피 순매수 전환',d:'순매수 전환 = 추세 반전 1차 신호.'},
+    {c:'var(--warn)',t:'BBB- 300bp 완전 돌파',d:'돌파 시 차익실현→유동성 경색 전환.'},
+    {c:'var(--ok)',t:'반도체 펀더멘털 점검',d:'수출 증가율 플러스면 구조적 동력 유효.'},
+  ],
+  us:[
+    {c:'var(--danger)',t:'CPI·PPI 발표 (매월 중순)',d:'3% 상회 지속 시 연준 인하 지연. 금리 추가 상승 압력.'},
+    {c:'var(--danger)',t:'미국 10Y 5% 돌파 여부',d:'5% 상회 시 글로벌 위험자산 동반 조정.'},
+    {c:'var(--warn)',t:'장단기 스프레드 역전 여부',d:'0%p 하회 시 경기침체 선행 신호.'},
+    {c:'var(--warn)',t:'WTI 100$ / 브렌트 105$ 돌파',d:'에너지發 인플레 재점화 임계선.'},
+    {c:'var(--ok)',t:'VIX 20 이하 안착',d:'20 하회 시 시장 안정 국면 복귀.'},
+  ],
+};
 
-function barPct(id,v){
-  if(v==null)return 30;
-  const m={vkospi:[0,83],usdkrw:[1200,1600],bbb:[0,400],
-    spread:[-30,80],cp:[0,150],semi:[0,160],cds:[0,120]};
-  if(id==='foreigner')return v>0?35:Math.min(95,Math.abs(v)/40000*100);
-  if(!m[id])return 50;
-  const[lo,hi]=m[id];
-  return Math.max(5,Math.min(97,(v-lo)/(hi-lo)*100));
-}
-function statusColor(s){return s==='ok'?'var(--ok)':s==='danger'?'var(--danger)':'var(--warn)';}
-function statusBg(s){return s==='ok'?'var(--ok-bg)':s==='danger'?'var(--danger-bg)':'var(--warn-bg)';}
-function statusTx(s){return s==='ok'?'var(--ok-tx)':s==='danger'?'var(--danger-tx)':'var(--warn-tx)';}
+let DATA=null, curMkt='kr', curTab='dashboard';
+
+function scoreColor(s){return s>=55?'var(--ok)':s>=40?'var(--warn)':'var(--danger)';}
+function scoreBg(s){return s>=55?'var(--ok-bg)':s>=45?'var(--warn-bg)':'var(--danger-bg)';}
+function scoreTx(s){return s>=55?'var(--ok-tx)':s>=45?'var(--warn-tx)':'var(--danger-tx)';}
 function scoreLabel(s){
   if(s>=65)return'안정';if(s>=55)return'숨고르기';
   if(s>=45)return'위험 우세';if(s>=38)return'위기 국면';return'위기 심화';}
+function stColor(s){return s==='ok'?'var(--ok)':s==='danger'?'var(--danger)':'var(--warn)';}
+function barPct(id,v){
+  if(v==null)return 30;
+  if(id==='foreigner')return v>0?35:Math.min(95,Math.abs(v)/40000*100);
+  const r=META[id]&&META[id].rng;
+  if(!r)return 50;
+  return Math.max(5,Math.min(97,(v-r[0])/(r[1]-r[0])*100));
+}
 
-let DATA=null;
+function tabBar(){
+  return `<div class="tab-bar">
+    <button class="tab ${curTab==='dashboard'?'active':''}" data-tab="dashboard">대시보드</button>
+    <button class="tab ${curTab==='history'?'active':''}" data-tab="history">히스토리</button>
+    <button class="tab ${curTab==='scenario'?'active':''}" data-tab="scenario">시나리오</button>
+    <button class="tab ${curTab==='checklist'?'active':''}" data-tab="checklist">체크리스트</button>
+  </div>`;
+}
 
-function renderDashboard(){
-  const inds=DATA.indicators, score=DATA.score;
-  const st=score>=55?'ok':score>=45?'warn':'danger';
-  let h=`<div class="score-banner" style="background:${statusBg(st)}">
-    <div class="score-num" style="color:${statusTx(st)}">${score}</div>
-    <div><div class="score-title" style="color:${statusTx(st)}">${scoreLabel(score)}</div>
-    <div class="score-sub" style="color:${statusTx(st)}">코스피 ${DATA.kospi?DATA.kospi.toLocaleString():'-'} · 8개 지표 종합 · 100점 만점(낮을수록 위험)</div></div></div>`;
+function renderMarket(){
+  if(curMkt==='total'){renderTotal();return;}
+  const m=DATA[curMkt], inds=m.indicators, score=m.score;
+  let h=tabBar();
 
-  h+='<div class="trend-strip"><div style="font-size:10px;color:var(--tx3);flex:0 0 100%;margin-bottom:4px">점수 추이</div>';
-  DATA.history.forEach((x,i)=>{
-    const c=x.score>=55?'var(--ok)':x.score>=40?'var(--warn)':'var(--danger)';
-    h+=`<div class="t-item"><div class="t-lb">${x.date}</div><div class="t-sc" style="color:${c}">${x.score}</div></div>`;
-    if(i<DATA.history.length-1)h+='<div class="t-arr">→</div>';
-  });
-  h+='</div>';
+  // 대시보드
+  h+=`<div class="view ${curTab==='dashboard'?'active':''}" id="v-dash">`;
+  h+=`<div class="score-banner" style="background:${scoreBg(score)}">
+    <div class="score-num" style="color:${scoreTx(score)}">${score}</div>
+    <div><div class="score-title" style="color:${scoreTx(score)}">${scoreLabel(score)} · ${curMkt==='kr'?'한국':'미국'} 시장</div>
+    <div class="score-sub" style="color:${scoreTx(score)}">${curMkt==='kr'?'코스피 '+(m.kospi?m.kospi.toLocaleString():'-'):'8개 지표 종합'} · 100점 만점(낮을수록 위험)</div></div></div>`;
+
+  // 미국이면 CPI/PPI 배너
+  if(curMkt==='us'&&m.macro){
+    h+='<div class="macro-banner">';
+    ['cpi','ppi'].forEach(k=>{
+      const x=m.macro[k];if(!x)return;
+      h+=`<div class="mb-card" style="background:${scoreBg(x.status==='ok'?60:x.status==='warn'?48:30)}">
+        <div class="mb-lb" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.label}</div>
+        <div class="mb-val" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.value||'-'}</div>
+        <div class="mb-date" style="color:${scoreTx(x.status==='ok'?60:x.status==='warn'?48:30)}">${x.date||''} 발표 기준</div></div>`;
+    });
+    h+='</div>';
+  }
 
   const fb=inds.filter(i=>i.source==='fallback').length;
-  if(fb>0)h+=`<div class="abar">⚠ ${fb}개 지표가 자동수집 실패로 직전값을 유지 중입니다. 사이트 구조 변경 가능성 — 점검이 필요할 수 있습니다.</div>`;
+  if(fb>0)h+=`<div class="abar">⚠ ${fb}개 지표가 자동수집 실패로 직전값 유지 중. 점검이 필요할 수 있습니다.</div>`;
 
   h+='<div class="ind-grid">';
   inds.forEach(ind=>{
     const dc=ind.status==='danger'?'dot-d':ind.status==='warn'?'dot-w':'dot-ok';
     h+=`<div class="ind-card" data-id="${ind.id}">
-      <div class="ic-top"><div class="ic-label">${META[ind.id].icon} ${ind.label}</div>
+      <div class="ic-top"><div class="ic-label">${ind.label}</div>
         <span class="ic-dot ${dc}"></span></div>
       <div class="ic-val">${ind.value!=null?ind.value:'-'}<span style="font-size:12px;font-weight:400;color:var(--tx2)">${ind.unit}</span></div>
       <div class="ic-sub">${ind.cat}</div>
-      <div class="bar-wrap"><div class="bar-fill" style="width:${barPct(ind.id,ind.raw)}%;background:${statusColor(ind.status)}"></div></div>
-      <div class="ic-src" style="color:var(--tx3)">${SRC_LABEL[ind.source]||ind.source}</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${barPct(ind.id,ind.raw)}%;background:${stColor(ind.status)}"></div></div>
+      <div class="ic-src" style="color:var(--tx3)">${SRC[ind.source]||ind.source}</div>
     </div>`;
   });
   h+='</div>';
-
-  h+=`<div class="ai-panel" id="ai-panel">
+  h+=`<div class="ai-panel">
     <div class="ai-hd"><span style="font-size:15px">✦</span>
     <div><div class="ai-title" id="ai-title">AI 해석</div>
     <div class="ai-sub" id="ai-sub">지표 카드를 누르면 분석합니다</div></div></div>
     <div id="ai-body" class="ai-ph">카드를 누르거나 종합 진단 버튼을 사용하세요.${ANTHROPIC_API_KEY?'':' (AI 기능은 API 키 입력 시 작동)'}</div></div>
     <div class="btn-row"><button class="btn" id="btn-all">종합 진단</button></div>`;
+  h+='</div>';
 
-  document.getElementById('dash-body').innerHTML=h;
-  document.querySelectorAll('.ind-card').forEach(c=>{
-    c.onclick=()=>selectCard(c.dataset.id);
+  // 히스토리
+  h+=`<div class="view ${curTab==='history'?'active':''}">
+    <div class="sec-title">건전성 점수 추이</div>
+    <div style="position:relative;height:200px;margin-bottom:16px"><canvas id="histChart"></canvas></div>
+    <div class="sec-title">기록 목록</div><div id="hist-list"></div></div>`;
+
+  // 시나리오
+  h+=`<div class="view ${curTab==='scenario'?'active':''}">
+    <div class="sec-title">단기 시나리오</div><div class="ind-grid">`;
+  SCEN[curMkt].forEach(s=>{
+    h+=`<div class="ind-card" style="cursor:default">
+      <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:4px;
+        background:${scoreBg(s.c==='ok'?60:s.c==='warn'?48:30)};
+        color:${scoreTx(s.c==='ok'?60:s.c==='warn'?48:30)}">${s.p}</span>
+      <div style="font-size:12px;font-weight:600;margin:5px 0 3px">${s.t}</div>
+      <div style="font-size:11px;color:var(--tx2);line-height:1.55">${s.b}</div></div>`;
   });
-  document.getElementById('btn-all').onclick=analyzeAll;
+  h+='</div></div>';
+
+  // 체크리스트
+  h+=`<div class="view ${curTab==='checklist'?'active':''}">
+    <div class="sec-title">모니터링 체크리스트</div>`;
+  CHK[curMkt].forEach(c=>{
+    h+=`<div style="display:flex;gap:10px;align-items:flex-start;padding:10px;
+      background:var(--surface);border-radius:8px;margin-bottom:8px">
+      <span style="color:${c.c};font-size:15px;flex-shrink:0">●</span>
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:2px">${c.t}</div>
+      <div style="font-size:12px;color:var(--tx2);line-height:1.5">${c.d}</div></div></div>`;
+  });
+  h+='</div>';
+
+  document.getElementById('body').innerHTML=h;
+  bindEvents();
+  if(curTab==='history')renderHistChart();
 }
 
-function renderHistory(){
-  const ctx=document.getElementById('histChart');
-  if(window._hc)window._hc.destroy();
+function renderTotal(){
+  const k=DATA.kr.score,u=DATA.us.score,t=DATA.total_score;
+  let h=`<div class="score-banner" style="background:${scoreBg(t)}">
+    <div class="score-num" style="color:${scoreTx(t)}">${t}</div>
+    <div><div class="score-title" style="color:${scoreTx(t)}">${scoreLabel(t)} · 글로벌 통합</div>
+    <div class="score-sub" style="color:${scoreTx(t)}">한국·미국 16개 지표 종합 평균</div></div></div>`;
+  h+=`<div class="dual-score">
+    <div class="ds-card"><div class="ds-lb">🇰🇷 한국</div>
+      <div class="ds-num" style="color:${scoreColor(k)}">${k}</div></div>
+    <div class="ds-card"><div class="ds-lb">🇺🇸 미국</div>
+      <div class="ds-num" style="color:${scoreColor(u)}">${u}</div></div>
+    <div class="ds-card"><div class="ds-lb">통합</div>
+      <div class="ds-num" style="color:${scoreColor(t)}">${t}</div></div></div>`;
+  h+=`<div class="sec-title">통합 점수 추이</div>
+    <div style="position:relative;height:220px;margin-bottom:12px"><canvas id="totalChart"></canvas></div>`;
+  h+=`<div class="ai-panel">
+    <div class="ai-hd"><span style="font-size:15px">✦</span>
+    <div><div class="ai-title" id="ai-title">글로벌 종합 진단</div>
+    <div class="ai-sub" id="ai-sub">한국·미국 16개 지표 기반</div></div></div>
+    <div id="ai-body" class="ai-ph">아래 버튼으로 한·미 통합 진단을 요청하세요.</div></div>
+    <div class="btn-row"><button class="btn" id="btn-total">글로벌 종합 진단</button></div>`;
+  document.getElementById('body').innerHTML=h;
+
+  const ctx=document.getElementById('totalChart');
   const dark=matchMedia('(prefers-color-scheme:dark)').matches;
-  window._hc=new Chart(ctx,{
-    type:'line',
+  new Chart(ctx,{type:'line',
+    data:{labels:DATA.history.map(x=>x.date),datasets:[
+      {label:'한국',data:DATA.history.map(x=>x.kr),borderColor:'#E24B4A',
+       borderDash:[4,3],pointRadius:3,tension:0.3,borderWidth:2},
+      {label:'미국',data:DATA.history.map(x=>x.us),borderColor:'#378ADD',
+       borderDash:[],pointRadius:3,tension:0.3,borderWidth:2},
+      {label:'통합',data:DATA.history.map(x=>x.total),borderColor:'#1D9E75',
+       pointRadius:4,tension:0.3,borderWidth:2.5}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{font:{size:11},boxWidth:12}}},
+      scales:{y:{min:0,max:100,ticks:{font:{size:11}},
+        grid:{color:dark?'rgba(255,255,255,.1)':'rgba(0,0,0,.1)'}},
+        x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+
+  const btn=document.getElementById('btn-total');
+  if(btn)btn.onclick=()=>{
+    const ks=DATA.kr.indicators.map(i=>`${i.label}:${i.value}${i.unit}`).join(', ');
+    const us=DATA.us.indicators.map(i=>`${i.label}:${i.value}${i.unit}`).join(', ');
+    callAI(`한국 지표: ${ks}. 미국 지표: ${us}. 한미 양국 시장을 통합 진단하고 상호 연관성과 핵심 리스크를 분석`,
+      '글로벌 종합 진단','한국·미국 통합');
+  };
+}
+
+function renderHistChart(){
+  const ctx=document.getElementById('histChart');
+  if(!ctx)return;
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  const key=curMkt;
+  new Chart(ctx,{type:'line',
     data:{labels:DATA.history.map(h=>h.date),
-      datasets:[{data:DATA.history.map(h=>h.score),
+      datasets:[{data:DATA.history.map(h=>h[key]),
         borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.1)',
-        pointBackgroundColor:DATA.history.map(h=>h.score>=55?'#1D9E75':h.score>=40?'#BA7517':'#E24B4A'),
+        pointBackgroundColor:DATA.history.map(h=>scoreColor(h[key])),
         pointRadius:5,fill:true,tension:0.3,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{y:{min:0,max:100,ticks:{font:{size:11}},
         grid:{color:dark?'rgba(255,255,255,.1)':'rgba(0,0,0,.1)'}},
-        x:{ticks:{font:{size:11}},grid:{display:false}}}}
-  });
+        x:{ticks:{font:{size:11}},grid:{display:false}}}}});
   document.getElementById('hist-list').innerHTML=
     [...DATA.history].reverse().map(h=>{
-      const c=h.score>=55?'var(--ok)':h.score>=40?'var(--warn)':'var(--danger)';
+      const v=h[key];
       return `<div class="hist-entry"><div class="hist-date">${h.date}</div>
-        <div class="hist-score" style="color:${c}">${h.score}</div>
-        <div style="font-size:12px;color:var(--tx2);padding-top:3px">${scoreLabel(h.score)}</div></div>`;
+        <div class="hist-pill" style="color:${scoreColor(v)}">${v}</div>
+        <div style="font-size:12px;color:var(--tx2)">${scoreLabel(v)}</div></div>`;
     }).join('');
-}
-
-function renderScenario(){
-  document.getElementById('sc-grid').innerHTML=SCENARIOS.map(s=>
-    `<div class="sc-card"><span class="chip ${s.cls}">${s.prob}</span>
-    <div class="sc-title">${s.title}</div><div class="sc-body">${s.body}</div></div>`).join('');
-}
-function renderChecklist(){
-  document.getElementById('cl-list').innerHTML=CHECKLIST.map(c=>
-    `<div class="cl-item"><span style="color:${c.c};font-size:15px;flex-shrink:0">●</span>
-    <div><div class="cl-t">${c.t}</div><div class="cl-d">${c.d}</div></div></div>`).join('');
 }
 
 let loading=false;
 async function callAI(prompt,title,sub){
   if(loading)return;
+  const body=document.getElementById('ai-body');
   if(!ANTHROPIC_API_KEY){
-    document.getElementById('ai-body').innerHTML=
-      '<span class="ai-ph">AI 해석을 쓰려면 index.html 상단의 ANTHROPIC_API_KEY 에 키를 입력하세요.</span>';
+    if(body)body.innerHTML='<span class="ai-ph">AI 해석을 쓰려면 index.html 상단 ANTHROPIC_API_KEY 에 키를 입력하세요.</span>';
     return;
   }
   loading=true;
-  document.getElementById('ai-title').textContent=title;
-  document.getElementById('ai-sub').textContent=sub;
-  document.getElementById('ai-body').innerHTML='<span class="ai-ph">분석 중...</span>';
-  const snap=DATA.indicators.map(i=>`${i.label}:${i.value}${i.unit}(${i.status})`).join(', ');
+  if(document.getElementById('ai-title'))document.getElementById('ai-title').textContent=title;
+  if(document.getElementById('ai-sub'))document.getElementById('ai-sub').textContent=sub;
+  if(body)body.innerHTML='<span class="ai-ph">분석 중...</span>';
   try{
     const r=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,
         'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
-        system:'한국 증시 전문 애널리스트. 3~4문장, 핵심만, 한국어, 평문.',
-        messages:[{role:'user',content:`현재 지표: ${snap}. ${prompt}`}]})
-    });
+        system:'한국·미국 증시 전문 애널리스트. 3~4문장, 핵심만, 한국어, 평문.',
+        messages:[{role:'user',content:prompt}]})});
     const d=await r.json();
     const t=(d.content||[]).map(b=>b.text||'').join('')||'응답 오류';
-    document.getElementById('ai-body').innerHTML=`<div class="ai-body">${t}</div>`;
+    if(body)body.innerHTML=`<div class="ai-body">${t}</div>`;
   }catch(e){
-    document.getElementById('ai-body').innerHTML='<span class="ai-ph">API 연결 오류</span>';
+    if(body)body.innerHTML='<span class="ai-ph">API 연결 오류</span>';
   }
   loading=false;
 }
-function selectCard(id){
-  document.querySelectorAll('.ind-card').forEach(c=>
-    c.classList.toggle('selected',c.dataset.id===id));
-  const ind=DATA.indicators.find(i=>i.id===id);
-  callAI(META[id].prompt,ind.label+' 분석',META[id].th);
-}
-function analyzeAll(){
-  callAI('8대 지표를 종합해 시장 건전성을 진단하고 리스크 순위와 대응 방향을 제시',
-    '종합 시장 진단','8개 지표 전체 기반');
+
+function bindEvents(){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{curTab=t.dataset.tab;renderMarket();};
+  });
+  document.querySelectorAll('.ind-card[data-id]').forEach(c=>{
+    c.onclick=()=>{
+      document.querySelectorAll('.ind-card').forEach(x=>x.classList.remove('selected'));
+      c.classList.add('selected');
+      const m=DATA[curMkt];
+      const ind=m.indicators.find(i=>i.id===c.dataset.id);
+      const snap=m.indicators.map(i=>`${i.label}:${i.value}${i.unit}`).join(', ');
+      callAI(`${curMkt==='kr'?'한국':'미국'} 시장 현재 지표: ${snap}. ${META[c.dataset.id].p}을 분석`,
+        ind.label+' 분석',META[c.dataset.id].th);
+    };
+  });
+  const ba=document.getElementById('btn-all');
+  if(ba)ba.onclick=()=>{
+    const m=DATA[curMkt];
+    const snap=m.indicators.map(i=>`${i.label}:${i.value}${i.unit}(${i.status})`).join(', ');
+    callAI(`${curMkt==='kr'?'한국':'미국'} 시장 8개 지표: ${snap}. 종합 건전성을 진단하고 리스크 순위와 대응 방향 제시`,
+      (curMkt==='kr'?'한국':'미국')+' 종합 진단','8개 지표 전체');
+  };
 }
 
-document.querySelectorAll('.tab').forEach(t=>{
-  t.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
-    if(t.dataset.tab==='history')renderHistory();
+document.querySelectorAll('.ms-btn').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.ms-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    curMkt=b.dataset.mkt;curTab='dashboard';
+    renderMarket();
   };
 });
 
-// data.json 로드
 fetch('data.json?t='+Date.now())
   .then(r=>r.json())
   .then(d=>{
     DATA=d;
     document.getElementById('upd').textContent='업데이트: '+(d.updated_kst||d.updated);
-    renderDashboard();renderScenario();renderChecklist();
+    renderMarket();
   })
   .catch(e=>{
-    document.getElementById('dash-body').innerHTML=
+    document.getElementById('body').innerHTML=
       '<div class="loading">data.json 을 불러오지 못했습니다.<br>'+
-      'GitHub Pages 환경에서 실행하거나 로컬 서버를 사용하세요.</div>';
+      'GitHub Pages 환경에서 실행하세요.</div>';
   });
 </script>
 </body>

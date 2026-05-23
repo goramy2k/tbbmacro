@@ -1,9 +1,10 @@
 {
-  "_comment": "무료 실시간 소스가 없는 지표는 여기에 직접 입력합니다. 주 1회 정도 갱신을 권장합니다.",
-  "_bbb_source": "KOFIA 채권정보센터 kofiabond.or.kr -> 시가평가 -> 등급별 스프레드",
+  "_comment": "무료 실시간 소스가 없는 한국 지표만 여기에 입력합니다. 미국 지표는 FRED API로 전부 자동 수집됩니다.",
+  "_갱신주기": "매주 월요일에 bbb_spread/cp_spread/cds 갱신, 매월 1일에 semi_export_yoy 갱신",
+  "_bbb_source": "KOFIA 채권정보센터 kofiabond.or.kr -> 시가평가 -> 등급별 민평수익률 (BBB- 회사채 - 동일만기 국고채)",
   "_cp_source": "KOFIA 채권정보센터 kofiabond.or.kr -> 단기금리 (CP 91일 - CD 91일)",
-  "_cds_source": "Bloomberg / Investing.com 등에서 South Korea 5Y CDS 확인",
-  "_semi_source": "관세청 수출입무역통계 unipass.customs.go.kr 또는 산업부 월간 보도자료",
+  "_cds_source": "Investing.com 에서 South Korea CDS 5Y 검색",
+  "_semi_source": "산업통상자원부 motie.go.kr 매월 1일 수출입동향 보도자료의 반도체 전년동월비",
 
   "bbb_spread": 295,
   "cp_spread": 38,

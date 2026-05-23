@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-한국 매크로 모니터링 - 지표 자동 수집 스크립트
-매일 KST 17:00 GitHub Actions로 실행되어 data.json 을 생성한다.
+한국 + 미국 매크로 모니터링 - 지표 자동 수집 스크립트
+매일 GitHub Actions 로 실행되어 data.json 을 생성한다.
 
-수집 방식
-  - 자동 (네이버 증권 / 관세청): VKOSPI, USD/KRW, 외국인 수급, 국고채 금리
-  - 추정 보정 (수동값 + 금리 연동): BBB- 스프레드, CP 스프레드, CDS
+한국 (8개)
+  - 자동 (네이버): VKOSPI, USD/KRW, 외국인 수급, 국고채 금리
+  - 수동 (manual_overrides.json): BBB-, CP 스프레드, CDS, 반도체 수출
 
-스크래핑은 사이트 HTML 구조에 의존하므로 실패할 수 있다.
-실패 시 manual_overrides.json 의 마지막 값으로 폴백한다.
+미국 (8개 카드 + CPI/PPI 별도)
+  - 자동 (FRED API): 2Y, 10Y, 30Y, 장단기 스프레드, HY 스프레드, VIX, WTI, 브렌트, CPI, PPI
+
+FRED API 키는 환경변수 FRED_API_KEY 로 받는다 (GitHub Secrets).
 """
 
 import json
@@ -31,179 +33,197 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(ROOT, "data.json")
 MANUAL_PATH = os.path.join(ROOT, "manual_overrides.json")
 
+# GitHub Secrets 에서 주입 (절대 코드에 키를 직접 쓰지 않는다)
+FRED_KEY = os.environ.get("FRED_API_KEY", "").strip()
 
-def fetch(url, timeout=15):
-    """간단 GET. 실패 시 None."""
+
+def fetch(url, timeout=20):
     try:
         req = urllib.request.Request(url, headers={"User-Agent": UA})
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.read().decode("utf-8", errors="ignore")
     except Exception as e:
-        print(f"[fetch 실패] {url} -> {e}", file=sys.stderr)
+        print(f"[fetch 실패] {url[:80]} -> {e}", file=sys.stderr)
         return None
 
 
-def fetch_json(url, timeout=15):
+def fetch_json(url, timeout=20):
     raw = fetch(url, timeout)
     if raw is None:
         return None
     try:
         return json.loads(raw)
     except Exception as e:
-        print(f"[json 파싱 실패] {url} -> {e}", file=sys.stderr)
+        print(f"[json 파싱 실패] -> {e}", file=sys.stderr)
         return None
 
 
-# ---------------------------------------------------------------------------
-# 1) USD/KRW  - 네이버 금융 환율 API
-# ---------------------------------------------------------------------------
-def get_usdkrw():
-    url = ("https://api.stock.naver.com/marketindex/exchange/FX_USDKRW")
+# ===========================================================================
+# FRED - 미국 지표 공통 수집기
+# ===========================================================================
+def fred_latest(series_id):
+    """FRED 시리즈의 최근 유효 관측치 1개를 반환."""
+    if not FRED_KEY:
+        print("[FRED] API 키 없음 - 미국 자동수집 건너뜀", file=sys.stderr)
+        return None, None
+    url = (f"https://api.stlouisfed.org/fred/series/observations"
+           f"?series_id={series_id}&api_key={FRED_KEY}&file_type=json"
+           f"&sort_order=desc&limit=8")
     j = fetch_json(url)
+    if not j:
+        return None, None
+    for o in j.get("observations", []):
+        if o.get("value") not in (".", "", None):
+            try:
+                return float(o["value"]), o["date"]
+            except ValueError:
+                continue
+    return None, None
+
+
+def fred_yoy(series_id):
+    """월간 지수의 전년동월비(%)를 계산. CPI, PPI 용."""
+    if not FRED_KEY:
+        return None, None
+    url = (f"https://api.stlouisfed.org/fred/series/observations"
+           f"?series_id={series_id}&api_key={FRED_KEY}&file_type=json"
+           f"&sort_order=desc&limit=14")
+    j = fetch_json(url)
+    if not j:
+        return None, None
+    vals = []
+    for o in j.get("observations", []):
+        if o.get("value") not in (".", "", None):
+            try:
+                vals.append((o["date"], float(o["value"])))
+            except ValueError:
+                continue
+    if len(vals) >= 13:
+        latest_date, latest = vals[0]
+        year_ago = vals[12][1]
+        if year_ago:
+            return round((latest / year_ago - 1) * 100, 1), latest_date
+    return None, None
+
+
+# ===========================================================================
+# 한국 지표 수집기
+# ===========================================================================
+def get_usdkrw():
+    j = fetch_json("https://api.stock.naver.com/marketindex/exchange/FX_USDKRW")
     try:
-        v = float(str(j["closePrice"]).replace(",", ""))
-        return {"value": f"{v:,.1f}", "raw": v, "ok": True}
+        return float(str(j["closePrice"]).replace(",", ""))
     except Exception:
         pass
-    # 폴백: 모바일 금융 페이지 스크래핑
     raw = fetch("https://m.stock.naver.com/marketindex/exchange/FX_USDKRW")
     if raw:
         m = re.search(r'"closePrice"\s*:\s*"([\d,\.]+)"', raw)
         if m:
-            v = float(m.group(1).replace(",", ""))
-            return {"value": f"{v:,.1f}", "raw": v, "ok": True}
-    return {"value": None, "raw": None, "ok": False}
+            return float(m.group(1).replace(",", ""))
+    return None
 
 
-# ---------------------------------------------------------------------------
-# 2) VKOSPI - 네이버 금융 지수 API (코스피 변동성지수)
-# ---------------------------------------------------------------------------
 def get_vkospi():
-    # 네이버 지수 코드: VKOSPI
-    url = "https://api.stock.naver.com/index/VKOSPI/basic"
-    j = fetch_json(url)
+    j = fetch_json("https://api.stock.naver.com/index/VKOSPI/basic")
     try:
-        v = float(str(j["closePrice"]).replace(",", ""))
-        return {"value": f"{v:.1f}", "raw": v, "ok": True}
+        return float(str(j["closePrice"]).replace(",", ""))
     except Exception:
-        pass
-    return {"value": None, "raw": None, "ok": False}
+        return None
 
 
-# ---------------------------------------------------------------------------
-# 3) 코스피 + 외국인 수급 - 네이버 금융 KOSPI API
-# ---------------------------------------------------------------------------
 def get_kospi_and_foreign():
-    url = "https://api.stock.naver.com/index/KOSPI/basic"
-    j = fetch_json(url)
-    kospi_close = None
+    j = fetch_json("https://api.stock.naver.com/index/KOSPI/basic")
+    kospi = None
     try:
-        kospi_close = float(str(j["closePrice"]).replace(",", ""))
+        kospi = float(str(j["closePrice"]).replace(",", ""))
     except Exception:
         pass
-
-    # 외국인 순매수: 네이버 투자자별 매매동향 API
     foreign = None
     inv = fetch_json("https://api.stock.naver.com/index/KOSPI/investorTrend")
     try:
-        # 가장 최근 거래일 외국인 순매수(억원)
         row = inv["investorTrends"][0]
-        foreign = float(row["foreignerPureBuyQuant"]) / 1e8  # 원 -> 억
+        foreign = float(row["foreignerPureBuyQuant"]) / 1e8
     except Exception:
         pass
-
-    return {
-        "kospi": kospi_close,
-        "foreign_eok": foreign,
-        "ok": kospi_close is not None,
-    }
+    return kospi, foreign
 
 
-# ---------------------------------------------------------------------------
-# 4) 국고채 10Y / 2Y 금리 - 네이버 금융 채권 페이지 스크래핑
-# ---------------------------------------------------------------------------
-def get_treasury_spread():
+def get_treasury_kr():
     raw = fetch("https://finance.naver.com/marketindex/bondList.naver")
     y10 = y2 = None
     if raw:
-        # 행 텍스트에서 '국고채(10년)' / '국고채(2년)' 근처 숫자 추출
         m10 = re.search(r'국고채\(10년\).*?([\d]\.[\d]{2,3})', raw, re.S)
         m2 = re.search(r'국고채\(2년\).*?([\d]\.[\d]{2,3})', raw, re.S)
         if m10:
             y10 = float(m10.group(1))
         if m2:
             y2 = float(m2.group(1))
-    spread = None
     if y10 is not None and y2 is not None:
-        spread = round((y10 - y2) * 100)  # bp
-    return {"y10": y10, "y2": y2, "spread_bp": spread,
-            "ok": spread is not None}
+        return round((y10 - y2) * 100)
+    return None
 
 
-# ---------------------------------------------------------------------------
-# 5) 반도체 수출 YoY - 관세청 수출입 통계 (월별, 변동 느림)
-#    실시간성이 낮으므로 manual_overrides 우선, 없으면 직전 값 유지
-# ---------------------------------------------------------------------------
-def get_semi_export(manual):
-    # 관세청 OpenAPI 는 인증키 필요 -> manual_overrides 로 관리
-    m = manual.get("semi_export_yoy")
-    if m is not None:
-        return {"value": f"{m:+.1f}", "raw": m, "ok": True}
-    return {"value": None, "raw": None, "ok": False}
-
-
-# ---------------------------------------------------------------------------
-# 6~8) BBB- / CP 스프레드 / CDS - 추정 보정
-#    기준값(manual) + 국고채 금리 변화에 연동한 소폭 보정
-# ---------------------------------------------------------------------------
-def estimate_credit(manual, treasury):
-    """
-    BBB-, CP, CDS 는 무료 실시간 소스가 없어
-    manual_overrides 의 기준값을 그대로 쓰되,
-    국고채 금리가 크게 움직이면 동일 방향으로 소폭 보정한다.
-    """
-    out = {}
-    for key in ("bbb_spread", "cp_spread", "cds"):
-        base = manual.get(key)
-        out[key] = base
+def get_us_market_naver():
+    """네이버 해외 시장지표에서 VIX, WTI, 브렌트 보조 수집."""
+    out = {"vix": None, "wti": None, "brent": None}
+    mapping = {
+        "vix": "https://api.stock.naver.com/index/.VIX/basic",
+        "wti": "https://api.stock.naver.com/marketindex/oil/CLcv1",
+        "brent": "https://api.stock.naver.com/marketindex/oil/LCOcv1",
+    }
+    for k, url in mapping.items():
+        j = fetch_json(url)
+        try:
+            out[k] = float(str(j["closePrice"]).replace(",", ""))
+        except Exception:
+            pass
     return out
 
 
+# ===========================================================================
+# 상태 판정
+# ===========================================================================
 def status_of(metric, v):
-    """지표별 임계값 -> 상태 문자열"""
     if v is None:
         return "warn"
-    if metric == "vkospi":
-        return "ok" if v < 15 else "warn" if v < 20 else "danger"
-    if metric == "usdkrw":
-        return "ok" if v < 1350 else "warn" if v < 1400 else "danger"
-    if metric == "foreigner":
-        return "ok" if v > 0 else "warn" if v > -5000 else "danger"
-    if metric == "bbb":
-        return "ok" if v < 200 else "warn" if v < 300 else "danger"
-    if metric == "spread":
-        return "ok" if v > 30 else "warn" if v > 0 else "danger"
-    if metric == "cp":
-        return "ok" if v < 50 else "warn" if v < 100 else "danger"
-    if metric == "semi":
-        return "ok" if v > 10 else "warn" if v > 0 else "danger"
-    if metric == "cds":
-        return "ok" if v < 50 else "warn" if v < 80 else "danger"
-    return "warn"
+    t = {
+        "vkospi":   lambda x: "ok" if x < 15 else "warn" if x < 20 else "danger",
+        "usdkrw":   lambda x: "ok" if x < 1350 else "warn" if x < 1400 else "danger",
+        "foreigner":lambda x: "ok" if x > 0 else "warn" if x > -5000 else "danger",
+        "bbb":      lambda x: "ok" if x < 200 else "warn" if x < 300 else "danger",
+        "spread":   lambda x: "ok" if x > 30 else "warn" if x > 0 else "danger",
+        "cp":       lambda x: "ok" if x < 50 else "warn" if x < 100 else "danger",
+        "semi":     lambda x: "ok" if x > 10 else "warn" if x > 0 else "danger",
+        "cds":      lambda x: "ok" if x < 50 else "warn" if x < 80 else "danger",
+        "vix":      lambda x: "ok" if x < 20 else "warn" if x < 30 else "danger",
+        "hy":       lambda x: "ok" if x < 4 else "warn" if x < 6 else "danger",
+        "wti":      lambda x: "ok" if x < 85 else "warn" if x < 100 else "danger",
+        "brent":    lambda x: "ok" if x < 90 else "warn" if x < 105 else "danger",
+        "us2y":     lambda x: "ok" if x < 4 else "warn" if x < 4.8 else "danger",
+        "us10y":    lambda x: "ok" if x < 4.5 else "warn" if x < 5 else "danger",
+        "us30y":    lambda x: "ok" if x < 5 else "warn" if x < 5.5 else "danger",
+        "usspread": lambda x: "ok" if x > 0.3 else "warn" if x > 0 else "danger",
+        "cpi":      lambda x: "ok" if x < 3 else "warn" if x < 4 else "danger",
+        "ppi":      lambda x: "ok" if x < 3 else "warn" if x < 5 else "danger",
+    }
+    fn = t.get(metric)
+    return fn(v) if fn else "warn"
 
 
 def score_of(indicators):
+    if not indicators:
+        return 0
+    per = 100.0 / len(indicators)
     s = 0.0
     for ind in indicators:
         if ind["status"] == "ok":
-            s += 12.5
+            s += per
         elif ind["status"] == "warn":
-            s += 6.25
+            s += per / 2
     return round(s)
 
 
 def main():
-    # 수동 보정값 로드
     manual = {}
     if os.path.exists(MANUAL_PATH):
         try:
@@ -212,7 +232,6 @@ def main():
         except Exception as e:
             print(f"[manual 로드 실패] {e}", file=sys.stderr)
 
-    # 직전 data.json 로드 (스크래핑 실패 시 폴백)
     prev = {}
     if os.path.exists(DATA_PATH):
         try:
@@ -220,124 +239,160 @@ def main():
                 prev = json.load(f)
         except Exception:
             pass
-    prev_inds = {i["id"]: i for i in prev.get("indicators", [])}
 
-    def fallback(metric_id, field):
-        return prev_inds.get(metric_id, {}).get(field)
+    prev_kr = {i["id"]: i for i in prev.get("kr", {}).get("indicators", [])}
+    prev_us = {i["id"]: i for i in prev.get("us", {}).get("indicators", [])}
 
-    # ---- 수집 ----
+    # ---------------- 한국 ----------------
     usdkrw = get_usdkrw()
     vkospi = get_vkospi()
-    km = get_kospi_and_foreign()
-    tr = get_treasury_spread()
-    semi = get_semi_export(manual)
-    credit = estimate_credit(manual, tr)
+    kospi, foreign = get_kospi_and_foreign()
+    kr_spread = get_treasury_kr()
 
-    indicators = []
+    def kr_auto(mid, val, fmt, unit, label, cat):
+        if val is None:
+            p = prev_kr.get(mid, {})
+            return {"id": mid, "label": label, "cat": cat,
+                    "value": p.get("value"), "raw": p.get("raw"),
+                    "unit": unit, "status": p.get("status", "warn"),
+                    "source": "fallback"}
+        return {"id": mid, "label": label, "cat": cat,
+                "value": fmt(val), "raw": val, "unit": unit,
+                "status": status_of(mid, val), "source": "naver"}
 
-    # VKOSPI
-    v = vkospi["raw"] if vkospi["ok"] else fallback("vkospi", "raw")
-    indicators.append({
-        "id": "vkospi", "label": "VKOSPI", "cat": "변동성",
-        "value": vkospi["value"] if vkospi["ok"] else fallback("vkospi", "value"),
-        "raw": v, "unit": "", "status": status_of("vkospi", v),
-        "source": "naver" if vkospi["ok"] else "fallback",
-    })
+    kr_inds = []
+    kr_inds.append(kr_auto("vkospi", vkospi, lambda v: f"{v:.1f}", "",
+                           "VKOSPI", "변동성"))
+    kr_inds.append(kr_auto("usdkrw", usdkrw, lambda v: f"{v:,.1f}", "원",
+                           "USD/KRW", "환율·수급"))
+    if foreign is None:
+        p = prev_kr.get("foreigner", {})
+        kr_inds.append({"id": "foreigner", "label": "외국인 순매수",
+                        "cat": "환율·수급", "value": p.get("value"),
+                        "raw": p.get("raw"), "unit": "",
+                        "status": p.get("status", "warn"), "source": "fallback"})
+    else:
+        fval = (f"{foreign/10000:+.1f}조" if abs(foreign) >= 10000
+                else f"{foreign:+,.0f}억")
+        kr_inds.append({"id": "foreigner", "label": "외국인 순매수",
+                        "cat": "환율·수급", "value": fval, "raw": foreign,
+                        "unit": "", "status": status_of("foreigner", foreign),
+                        "source": "naver"})
+    bbb = manual.get("bbb_spread")
+    kr_inds.append({"id": "bbb", "label": "BBB- 스프레드", "cat": "크레딧",
+                    "value": f"~{bbb:.0f}" if bbb is not None else None,
+                    "raw": bbb, "unit": "bp",
+                    "status": status_of("bbb", bbb), "source": "manual"})
+    kr_inds.append(kr_auto("spread", kr_spread, lambda v: f"{v:+.0f}", "bp",
+                           "국고채 10Y-2Y", "금리곡선"))
+    cp = manual.get("cp_spread")
+    kr_inds.append({"id": "cp", "label": "CP 스프레드", "cat": "크레딧",
+                    "value": f"~{cp:.0f}" if cp is not None else None,
+                    "raw": cp, "unit": "bp",
+                    "status": status_of("cp", cp), "source": "manual"})
+    semi = manual.get("semi_export_yoy")
+    kr_inds.append({"id": "semi", "label": "반도체 수출 YoY", "cat": "경기선행",
+                    "value": f"{semi:+.1f}" if semi is not None else None,
+                    "raw": semi, "unit": "%",
+                    "status": status_of("semi", semi), "source": "manual"})
+    cds = manual.get("cds")
+    kr_inds.append({"id": "cds", "label": "한국 CDS 5Y", "cat": "국가신용",
+                    "value": f"~{cds:.0f}" if cds is not None else None,
+                    "raw": cds, "unit": "bp",
+                    "status": status_of("cds", cds), "source": "manual"})
 
-    # USD/KRW
-    v = usdkrw["raw"] if usdkrw["ok"] else fallback("usdkrw", "raw")
-    indicators.append({
-        "id": "usdkrw", "label": "USD/KRW", "cat": "환율·수급",
-        "value": usdkrw["value"] if usdkrw["ok"] else fallback("usdkrw", "value"),
-        "raw": v, "unit": "원", "status": status_of("usdkrw", v),
-        "source": "naver" if usdkrw["ok"] else "fallback",
-    })
+    # ---------------- 미국 ----------------
+    us2y, _ = fred_latest("DGS2")
+    us10y, _ = fred_latest("DGS10")
+    us30y, _ = fred_latest("DGS30")
+    usspread, _ = fred_latest("T10Y2Y")
+    hy, _ = fred_latest("BAMLH0A0HYM2")
+    vix_f, _ = fred_latest("VIXCLS")
+    wti_f, _ = fred_latest("DCOILWTICO")
+    brent_f, _ = fred_latest("DCOILBRENTEU")
+    cpi_yoy, cpi_date = fred_yoy("CPIAUCSL")
+    ppi_yoy, ppi_date = fred_yoy("PPIACO")
 
-    # 외국인 수급
-    fv = km["foreign_eok"]
-    if fv is None:
-        fv = fallback("foreigner", "raw")
-    fval = None
-    if fv is not None:
-        fval = f"{fv/10000:+.1f}조" if abs(fv) >= 10000 else f"{fv:+,.0f}억"
-    indicators.append({
-        "id": "foreigner", "label": "외국인 순매수", "cat": "환율·수급",
-        "value": fval, "raw": fv, "unit": "",
-        "status": status_of("foreigner", fv),
-        "source": "naver" if km["ok"] and km["foreign_eok"] is not None else "fallback",
-    })
+    nv = get_us_market_naver()
+    vix = vix_f if vix_f is not None else nv["vix"]
+    wti = wti_f if wti_f is not None else nv["wti"]
+    brent = brent_f if brent_f is not None else nv["brent"]
 
-    # BBB- 스프레드 (추정/수동)
-    v = credit["bbb_spread"]
-    if v is None:
-        v = fallback("bbb", "raw")
-    indicators.append({
-        "id": "bbb", "label": "BBB- 스프레드", "cat": "크레딧",
-        "value": f"~{v:.0f}" if v is not None else None, "raw": v, "unit": "bp",
-        "status": status_of("bbb", v), "source": "manual",
-    })
+    def us_card(mid, val, fmt, unit, label, cat):
+        if val is None:
+            p = prev_us.get(mid, {})
+            return {"id": mid, "label": label, "cat": cat,
+                    "value": p.get("value"), "raw": p.get("raw"),
+                    "unit": unit, "status": p.get("status", "warn"),
+                    "source": "fallback"}
+        return {"id": mid, "label": label, "cat": cat,
+                "value": fmt(val), "raw": val, "unit": unit,
+                "status": status_of(mid, val), "source": "fred"}
 
-    # 국고채 10Y-2Y
-    v = tr["spread_bp"] if tr["ok"] else fallback("spread", "raw")
-    indicators.append({
-        "id": "spread", "label": "국고채 10Y-2Y", "cat": "금리곡선",
-        "value": f"{v:+.0f}" if v is not None else None, "raw": v, "unit": "bp",
-        "status": status_of("spread", v),
-        "source": "naver" if tr["ok"] else "fallback",
-    })
+    us_inds = []
+    us_inds.append(us_card("vix", vix, lambda v: f"{v:.1f}", "", "VIX", "변동성"))
+    us_inds.append(us_card("hy", hy, lambda v: f"{v:.2f}", "%",
+                           "HY 스프레드", "크레딧"))
+    us_inds.append(us_card("wti", wti, lambda v: f"{v:.1f}", "$",
+                           "WTI 유가", "원자재"))
+    us_inds.append(us_card("brent", brent, lambda v: f"{v:.1f}", "$",
+                           "브렌트유", "원자재"))
+    us_inds.append(us_card("us2y", us2y, lambda v: f"{v:.2f}", "%",
+                           "미국 2Y", "금리"))
+    us_inds.append(us_card("us10y", us10y, lambda v: f"{v:.2f}", "%",
+                           "미국 10Y", "금리"))
+    us_inds.append(us_card("us30y", us30y, lambda v: f"{v:.2f}", "%",
+                           "미국 30Y", "금리"))
+    us_inds.append(us_card("usspread", usspread, lambda v: f"{v:+.2f}", "%p",
+                           "장단기 10Y-2Y", "금리곡선"))
 
-    # CP 스프레드 (추정/수동)
-    v = credit["cp_spread"]
-    if v is None:
-        v = fallback("cp", "raw")
-    indicators.append({
-        "id": "cp", "label": "CP 스프레드", "cat": "크레딧",
-        "value": f"~{v:.0f}" if v is not None else None, "raw": v, "unit": "bp",
-        "status": status_of("cp", v), "source": "manual",
-    })
+    pm = prev.get("us", {}).get("macro", {})
+    macro = {
+        "cpi": {"label": "미국 CPI YoY",
+                "value": f"{cpi_yoy:+.1f}%" if cpi_yoy is not None
+                else pm.get("cpi", {}).get("value"),
+                "raw": cpi_yoy if cpi_yoy is not None
+                else pm.get("cpi", {}).get("raw"),
+                "date": cpi_date or pm.get("cpi", {}).get("date"),
+                "status": status_of("cpi", cpi_yoy if cpi_yoy is not None
+                                     else pm.get("cpi", {}).get("raw"))},
+        "ppi": {"label": "미국 PPI YoY",
+                "value": f"{ppi_yoy:+.1f}%" if ppi_yoy is not None
+                else pm.get("ppi", {}).get("value"),
+                "raw": ppi_yoy if ppi_yoy is not None
+                else pm.get("ppi", {}).get("raw"),
+                "date": ppi_date or pm.get("ppi", {}).get("date"),
+                "status": status_of("ppi", ppi_yoy if ppi_yoy is not None
+                                     else pm.get("ppi", {}).get("raw"))},
+    }
 
-    # 반도체 수출 YoY
-    v = semi["raw"] if semi["ok"] else fallback("semi", "raw")
-    indicators.append({
-        "id": "semi", "label": "반도체 수출 YoY", "cat": "경기선행",
-        "value": semi["value"] if semi["ok"] else fallback("semi", "value"),
-        "raw": v, "unit": "%", "status": status_of("semi", v),
-        "source": "manual",
-    })
+    kr_score = score_of(kr_inds)
+    us_score = score_of(us_inds)
+    total_score = round((kr_score + us_score) / 2)
 
-    # 한국 CDS
-    v = credit["cds"]
-    if v is None:
-        v = fallback("cds", "raw")
-    indicators.append({
-        "id": "cds", "label": "한국 CDS 5Y", "cat": "국가신용",
-        "value": f"~{v:.0f}" if v is not None else None, "raw": v, "unit": "bp",
-        "status": status_of("cds", v), "source": "manual",
-    })
-
-    score = score_of(indicators)
-
-    # 히스토리 누적
     history = prev.get("history", [])
     history = [h for h in history if h.get("date") != DATESTR]
-    history.append({"date": DATESTR, "score": score})
-    history = history[-30:]  # 최근 30일만
+    history.append({"date": DATESTR, "kr": kr_score,
+                    "us": us_score, "total": total_score})
+    history = history[-30:]
 
     out = {
         "updated": ISO,
         "updated_kst": TODAY.strftime("%Y-%m-%d %H:%M KST"),
-        "kospi": km["kospi"],
-        "score": score,
-        "indicators": indicators,
+        "total_score": total_score,
         "history": history,
+        "kr": {"score": kr_score, "kospi": kospi, "indicators": kr_inds},
+        "us": {"score": us_score, "indicators": us_inds, "macro": macro},
     }
 
     with open(DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    ok_cnt = sum(1 for i in indicators if i["source"] == "naver")
-    print(f"[완료] {ISO} | 점수 {score} | 자동수집 {ok_cnt}/8 | "
-          f"코스피 {km['kospi']}")
+    kr_ok = sum(1 for i in kr_inds if i["source"] in ("naver", "manual"))
+    us_ok = sum(1 for i in us_inds if i["source"] == "fred")
+    print(f"[완료] {ISO} | 통합 {total_score} "
+          f"(한국 {kr_score}/미국 {us_score}) | "
+          f"한국 {kr_ok}/8, 미국 {us_ok}/8 수집")
 
 
 if __name__ == "__main__":
