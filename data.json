@@ -1,6 +1,6 @@
 {
   "updated": "2026-05-23",
-  "updated_kst": "2026-05-23 20:57 KST",
+  "updated_kst": "2026-05-23 21:08 KST",
   "total_score": 50,
   "history": [
     {
@@ -226,8 +226,8 @@
       },
       "ppi": {
         "label": "미국 PPI YoY",
-        "value": "+9.8%",
-        "raw": 9.8,
+        "value": "+6.0%",
+        "raw": 6.0,
         "date": "2026-04-01",
         "status": "danger"
       }
