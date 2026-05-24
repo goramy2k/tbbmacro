@@ -307,8 +307,8 @@ fetch('data.json?t='+Date.now())
   .then(r=>r.json())
   .then(d=>{
     DATA=d;
-    const uk=d.updated_kr?'한국 '+d.updated_kr:'';
-    const uu=d.updated_us?'미국 '+d.updated_us:'';
+    const uk=d.updated_kr?'한국 업데이트 '+d.updated_kr:'';
+    const uu=d.updated_us?'미국 업데이트 '+d.updated_us:'';
     document.getElementById('upd').innerHTML=
       (uk?uk+'<br>':'')+(uu||d.updated_kst||'');
     render();
