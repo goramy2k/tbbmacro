@@ -22,6 +22,12 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: 한국 지표 수집·분석
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scraper.py kr
+
       - name: data.json 커밋
         run: |
           git config user.name "github-actions[bot]"
@@ -36,7 +42,7 @@ jobs:
               exit 0
             fi
             git add data.json
-            git commit -m "지표 업데이트: $(date -u +'%Y-%m-%d %H:%M')"
+            git commit -m "한국 지표 업데이트: $(date -u +'%Y-%m-%d %H:%M')"
             if git push origin HEAD:main; then
               echo "푸시 성공"
               exit 0
