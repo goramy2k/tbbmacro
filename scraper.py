@@ -246,7 +246,7 @@ def claude_analyze(prompt, system):
 
     url = "https://api.anthropic.com/v1/messages"
     payload = {
-        "model": "claude-sonnet-4-20250514",
+        "model": "claude-sonnet-4-5",
         "max_tokens": 1000,
         "system": system,
         "messages": [{"role": "user", "content": prompt}],
