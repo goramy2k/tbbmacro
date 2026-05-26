@@ -6,10 +6,10 @@
   "_cds_source": "Investing.com 에서 South Korea CDS 5Y 검색",
   "_semi_source": "산업통상자원부 motie.go.kr 매월 1일 수출입동향 보도자료의 반도체 전년동월비",
 
-  "bbb_spread": 295,
-  "cp_spread": 38,
-  "cds": 50,
-  "semi_export_yoy": 149.8,
+  "bbb_spread": 645,
+  "cp_spread": 21,
+  "cds": 45,
+  "semi_export_yoy": 202.1,
 
-  "_last_manual_update": "2026-05-22"
+  "_last_manual_update": "2026-05-26"
 }
